@@ -23,7 +23,6 @@
 **What data needs to be collected and how you will collect it.**
 
 - Data for each year can be found on the [Boston gov website](<https://data.boston.gov/dataset/311-service-requests>), which will be downloaded and merged into one dataframe for exploration and analysis.
-- Data for each year will be downloaded and merged into a single dataframe for analysis.
 - Preprocessing will include cleaning categorical fields, deriving temporal features, and computing resolution times.
 
 **How you plan on modeling the data.**
