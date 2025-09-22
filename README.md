@@ -3,8 +3,7 @@
 **Description of the project.**
 
 - The goal of this project is to create a historical database of 311 service requests recorded by the City of Boston from 2011 to 2025. Using this database, we aim to analyze trends and patterns in service requests, identify operational insights, and provide recommendations for improving city responsiveness.
-- More details can be found in the Spark Project document
-  - [(External View) Spring 2025 506 Packaged Projects](https://docs.google.com/document/d/1-a7IIj5K5v1mcdvi0_cUSYJpfFmZ9QJmsYikYGl3bJ4/edit?tab=t.0)
+- More details can be found in the [Spark Project document](https://docs.google.com/document/d/1-a7IIj5K5v1mcdvi0_cUSYJpfFmZ9QJmsYikYGl3bJ4/edit?tab=t.0)
 
 **Clear goal(s).**
 
@@ -23,7 +22,7 @@
 
 **What data needs to be collected and how you will collect it.**
 
-- Data for each year can be found on this website (<https://data.boston.gov/dataset/311-service-requests>), which will be downloaded and merged into one dataframe for exploration and analysis.
+- Data for each year can be found on the [Boston gov website](<https://data.boston.gov/dataset/311-service-requests>), which will be downloaded and merged into one dataframe for exploration and analysis.
 - Data for each year will be downloaded and merged into a single dataframe for analysis.
 - Preprocessing will include cleaning categorical fields, deriving temporal features, and computing resolution times.
 
