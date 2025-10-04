@@ -53,25 +53,39 @@ Data for each year can be found on the [Boston gov website](https://data.boston.
 
 ## Modeling Approach
 
-### Baseline Models
+### Core Models (Primary Focus)
 
-- Median-based predictions
-- Linear regression
-- Decision trees
+**1. Resolution Time Prediction (Regression)**
+- **Baseline:** Linear Regression - simple, interpretable, establishes RMSE baseline
+- **Intermediate:** Random Forest - captures non-linear relationships, provides feature importance
+- **Production:** XGBoost/LightGBM - best predictive performance, handles complex feature interactions
+- **Alternative:** Elastic Net Regularized Regression (if high-dimensional data after encoding) (probably wont be needed)
 
-### Clustering
+**2. Case Closure Classification**
+- **Baseline:** Logistic Regression
+- **Advanced:** XGBoost - optimized for F1-score on imbalanced classes
 
-- K-means or HDBSCAN on neighborhood-by-type volume profiles to find pattern clusters (helps dashboard segmentation)
-
-### Advanced Models
-
-- Regularized Linear / Elastic Net
-- Gradient Boosting (XGBoost / LightGBM)
-- Random Forest for interpretability
+**3. Neighborhood Segmentation (Clustering)**
+- **Primary:** K-means clustering or HDBScan on neighborhood request patterns
+- **Validation:** Silhouette score and domain expert review
 
 ### Stretch Models
 
-- LSTM for time series prediction of request volume or resolution time
+**4. Request Volume Forecasting (Time Series)**
+- **Baseline:** Prophet
+- **Advanced:** LSTM for multi-variate time series (daily/weekly volume predictions)
+
+### Expected Challenges
+- - **Limited features at request open time:** Can only use request characteristics, not case progression data
+- Imbalanced data across neighborhoods -> stratified sampling
+- Missing CLOSED_DT values -> separate classification problem (we will ignore it for now)
+- Skewed resolution time distribution -> log transformation or quantile regression
+- Seasonal patterns -> add season feature
+
+### Feature Extraction
+- **Temporal:** day of week, month, season, is_holiday, time since previous request
+- **Derived:** requests per capita by neighborhood, resolution time minus SLA
+- **Categorical encodings:** one-hot for request type
 
 ---
 
@@ -101,14 +115,30 @@ Data for each year can be found on the [Boston gov website](https://data.boston.
 ---
 
 ## Test Plan
+- **Resolution Time Prediction:** Can we predict how long a request will take to resolve?
+- **Case Closure Classification:** Can we predict whether a case will be closed vs. remain open/null?
+- **Request Volume Forecasting:** Can we forecast daily/weekly request volumes?
 
-### Temporal Tasks
+### Validation Strategy:
+- **Temporal split:** Train on 2011-2023, validate on 2024, test on 2025
+- **For clustering:** Silhouette score and visual inspection of cluster coherence.
 
-- Train on earlier periods and test on later periods (e.g., train 2021–2023, test 2024)
+## Evaluation Metrics
+### Regression Tasks (Resolution Time Prediction):
+- RMSE (Root Mean Squared Error) - penalizes large errors
+- MAE (Mean Absolute Error) - interpretable average error in days/hours
+- R² - proportion of variance explained
+- MAPE (Mean Absolute Percentage Error) - for relative error understanding
 
-### Non-Temporal Tasks
+### Classification Tasks (Case Closure Status):
+- Accuracy - overall correctness
+- F1-Score - balance of precision and recall (especially for imbalanced classes)
+- Confusion Matrix - to understand misclassification patterns
 
-- 80% training / 20% testing split
-- K-fold cross-validation within the training set to ensure model stability
+### Clustering Quality:
+- Silhouette Score - cluster cohesion and separation
+- Within-cluster variance - compactness measure
 
----
+### Forecasting Tasks:
+- RMSE and MAE for daily/weekly volume predictions
+- **Walk-forward validation:** iteratively train on historical data, predict next period, then expand training window
