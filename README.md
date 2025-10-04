@@ -67,7 +67,6 @@ Data for each year can be found on the [Boston gov website](https://data.boston.
 
 **3. Neighborhood Segmentation (Clustering)**
 - **Primary:** K-means clustering or HDBScan on neighborhood request patterns
-- **Validation:** Silhouette score and domain expert review
 
 ### Stretch Models
 
