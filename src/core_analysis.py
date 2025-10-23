@@ -440,7 +440,7 @@ def main() -> None:
     source_dist = calculate_source_distribution(df)
 
     # Calculate daily average (using groupby apply)
-    daily_avg = df.groupby("year").apply(lambda x: len(x) / x["date"].nunique(), include_groups=False).reset_index()
+    daily_avg = df.groupby("year").apply(lambda x: len(x) / x["date"].nunique()).reset_index()
     daily_avg.columns = ["year", "avg_daily_requests"]
 
     # Resolution analysis
