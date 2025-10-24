@@ -15,6 +15,16 @@ Analyzing 14 years (2011-2025) of Boston 311 service requests to identify trends
 - **Logging:** Python standard library `logging`
 - **Environment:** Jupyter notebooks for exploration, .py scripts for production analysis
 
+## Code Style Guide
+**📖 See [CODE_STYLE.md](CODE_STYLE.md) for complete coding standards.**
+
+Key principles:
+- One function = one task (≤25 lines preferred)
+- Analysis functions: compute → return DataFrame (NO plotting)
+- Visualization functions: receive data → render + save plot
+- Use one-line docstrings for simple functions, full docstrings for complex ones
+- Type hints required on all function signatures
+
 
 
 ## Project Structure

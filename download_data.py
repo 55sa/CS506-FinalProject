@@ -1,14 +1,9 @@
 #!/usr/bin/env python3
-"""
-Download Boston 311 Service Request data files (2011-2025).
-
-This script downloads all yearly CSV files from the Boston Open Data portal
-and saves them to the data/raw directory with standardized names.
-"""
+"""Download Boston 311 Service Request data files (2011-2025)."""
 
 from __future__ import annotations
 
-import logging
+import sys
 import time
 from pathlib import Path
 from typing import Optional
@@ -17,14 +12,14 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-# Setup logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s"
-)
-logger: logging.Logger = logging.getLogger(__name__)
+# Add src to path for logger import
+sys.path.insert(0, str(Path(__file__).parent))
 
-# Download URLs for each year (2011-2025)
+from src.utils.logger import get_logger
+
+logger = get_logger(__name__)
+
+# Download URLs for each year
 DOWNLOAD_URLS: dict[int, str] = {
     2025: "https://data.boston.gov/dataset/8048697b-ad64-4bfc-b090-ee00169f2323/resource/9d7c2214-4709-478a-a2e8-fb2020a5bb94/download/tmpfd97jjsj.csv",
     2024: "https://data.boston.gov/dataset/8048697b-ad64-4bfc-b090-ee00169f2323/resource/dff4d804-5031-443a-8409-8344efd0e5c8/download/tmpm461rr5o.csv",
@@ -43,32 +38,21 @@ DOWNLOAD_URLS: dict[int, str] = {
     2011: "https://data.boston.gov/dataset/8048697b-ad64-4bfc-b090-ee00169f2323/resource/94b499d9-712a-4d2a-b790-7ceec5c9c4b1/download/tmp_9ogynu0.csv",
 }
 
-# Output directory
 DATA_DIR = Path("data/raw")
-
-# Download settings
-CHUNK_SIZE = 8192  # 8KB chunks
-TIMEOUT = 30  # seconds
+CHUNK_SIZE = 8192
+TIMEOUT = 30
 MAX_RETRIES = 3
 
 
 def get_session() -> requests.Session:
-    """
-    Create a requests session with retry logic.
-
-    Returns:
-    --------
-    requests.Session
-        Configured session with retry adapter
-    """
+    """Create requests session with retry logic."""
     session = requests.Session()
 
-    # Configure retry strategy
     retry_strategy = Retry(
         total=MAX_RETRIES,
         backoff_factor=1,
         status_forcelist=[429, 500, 502, 503, 504],
-        allowed_methods=["GET"]
+        allowed_methods=["GET"],
     )
 
     adapter = HTTPAdapter(max_retries=retry_strategy)
@@ -79,26 +63,18 @@ def get_session() -> requests.Session:
 
 
 def download_file(
-    url: str,
-    output_path: Path,
-    session: Optional[requests.Session] = None
+    url: str, output_path: Path, session: Optional[requests.Session] = None
 ) -> bool:
     """
-    Download a file from URL to output path with progress indication.
+    Download file from URL to output path with progress indication.
 
-    Parameters:
-    -----------
-    url : str
-        URL to download from
-    output_path : Path
-        Path where file should be saved
-    session : Optional[requests.Session]
-        Requests session to use (creates new if None)
+    Args:
+        url: URL to download from.
+        output_path: Path where file should be saved.
+        session: Requests session (creates new if None).
 
     Returns:
-    --------
-    bool
-        True if download successful, False otherwise
+        True if download successful, False otherwise.
     """
     if session is None:
         session = get_session()
@@ -106,16 +82,13 @@ def download_file(
     try:
         logger.info(f"Downloading {output_path.name}...")
 
-        # Stream the download
         response = session.get(url, stream=True, timeout=TIMEOUT)
         response.raise_for_status()
 
-        # Get file size if available
-        total_size = int(response.headers.get('content-length', 0))
+        total_size = int(response.headers.get("content-length", 0))
 
-        # Download with progress
         downloaded = 0
-        with open(output_path, 'wb') as f:
+        with open(output_path, "wb") as f:
             for chunk in response.iter_content(chunk_size=CHUNK_SIZE):
                 if chunk:
                     f.write(chunk)
@@ -131,9 +104,8 @@ def download_file(
         return True
 
     except requests.exceptions.RequestException as e:
-        logger.error(f"✗ Failed to download {output_path.name}: {str(e)}")
+        logger.error(f"✗ Failed to download {output_path.name}: {e}")
 
-        # Clean up partial download
         if output_path.exists():
             output_path.unlink()
 
@@ -141,37 +113,27 @@ def download_file(
 
 
 def download_all_data(
-    years: Optional[list[int]] = None,
-    skip_existing: bool = True
-) -> dict[str, bool]:
+    years: Optional[list[int]] = None, skip_existing: bool = True
+) -> dict[int, bool]:
     """
     Download all 311 service request data files.
 
-    Parameters:
-    -----------
-    years : Optional[list[int]]
-        Specific years to download. If None, downloads all years.
-    skip_existing : bool
-        If True, skip files that already exist (default: True)
+    Args:
+        years: Specific years to download (downloads all if None).
+        skip_existing: Skip files that already exist.
 
     Returns:
-    --------
-    dict[str, bool]
-        Dictionary mapping year to download success status
+        Dict mapping year to download success status.
     """
-    # Create output directory
     DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-    # Determine which years to download
     years_to_download = years if years else sorted(DOWNLOAD_URLS.keys())
 
     logger.info(f"Starting download of {len(years_to_download)} files")
     logger.info(f"Output directory: {DATA_DIR.absolute()}")
     logger.info("-" * 70)
 
-    # Create session for reuse
     session = get_session()
-
     results: dict[int, bool] = {}
     successful = 0
     skipped = 0
@@ -179,22 +141,22 @@ def download_all_data(
 
     for year in years_to_download:
         if year not in DOWNLOAD_URLS:
-            logger.warning(f"No URL available for year {year}, skipping")
+            logger.warning(f"No URL for year {year}, skipping")
             results[year] = False
             failed += 1
             continue
 
         output_path = DATA_DIR / f"311_requests_{year}.csv"
 
-        # Skip if file exists
         if skip_existing and output_path.exists():
             file_size_mb = output_path.stat().st_size / (1024 * 1024)
-            logger.info(f"⊘ Skipping {year} (already exists, {file_size_mb:.2f} MB)")
+            logger.info(
+                f"⊘ Skipping {year} (exists, {file_size_mb:.2f} MB)"
+            )
             results[year] = True
             skipped += 1
             continue
 
-        # Download the file
         url = DOWNLOAD_URLS[year]
         success = download_file(url, output_path, session)
         results[year] = success
@@ -204,11 +166,9 @@ def download_all_data(
         else:
             failed += 1
 
-        # Be nice to the server - small delay between downloads
-        if year != years_to_download[-1]:  # Don't sleep after last download
+        if year != years_to_download[-1]:
             time.sleep(1)
 
-    # Print summary
     logger.info("-" * 70)
     logger.info("Download Summary:")
     logger.info(f"  ✓ Successfully downloaded: {successful}")
@@ -220,27 +180,23 @@ def download_all_data(
 
 
 def main() -> None:
-    """Main function to run the download script."""
+    """Run the download script."""
     logger.info("=" * 70)
     logger.info("Boston 311 Service Request Data Download")
     logger.info("=" * 70)
 
-    # Download all years
     results = download_all_data()
 
-    # Check if all downloads were successful
     all_successful = all(results.values())
 
     if all_successful:
         logger.info("\n✅ All data files downloaded successfully!")
         logger.info("\nNext steps:")
-        logger.info("  1. Run preprocessing: python src/data/preprocessor.py")
-        logger.info("  2. Run analysis: python src/analysis/temporal.py")
-        logger.info("  3. Generate visualizations: python src/visualization/temporal.py")
+        logger.info("  1. Run: python src/core_analysis.py")
     else:
         failed_years = [year for year, success in results.items() if not success]
         logger.warning(f"\n⚠️  Some downloads failed: {failed_years}")
-        logger.info("You can retry failed downloads by running this script again.")
+        logger.info("Retry by running this script again.")
 
     logger.info(f"\nData location: {DATA_DIR.absolute()}")
 
