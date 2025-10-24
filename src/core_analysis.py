@@ -103,7 +103,7 @@ def main() -> None:
     # ========================================================================
     # Run all analyses using modular functions
     # ========================================================================
-    logger.info("\n" + "=" * 80)
+    logger.info("=" * 80)
     logger.info("RUNNING CORE ANALYSES")
     logger.info("=" * 80)
 
@@ -172,7 +172,7 @@ def main() -> None:
     # ========================================================================
     # Generate all visualizations
     # ========================================================================
-    logger.info("\n" + "=" * 80)
+    logger.info("=" * 80)
     logger.info("GENERATING VISUALIZATIONS")
     logger.info("=" * 80 + "\n")
 
@@ -224,7 +224,7 @@ def main() -> None:
     # ========================================================================
     # SUMMARY STATISTICS
     # ========================================================================
-    logger.info("\n" + "=" * 80)
+    logger.info("=" * 80)
     logger.info("COMPREHENSIVE SUMMARY STATISTICS (2011-2025)")
     logger.info("=" * 80)
 
@@ -271,7 +271,7 @@ def main() -> None:
     logger.info(f"  Fastest Queue (avg):    {queue_resolution['mean_days'].idxmin()} ({queue_resolution['mean_days'].min():.1f} days)")
     logger.info(f"  Slowest Queue (avg):    {queue_resolution['mean_days'].idxmax()} ({queue_resolution['mean_days'].max():.1f} days)")
 
-    logger.info("\n" + "=" * 80)
+    logger.info("=" * 80)
     logger.info("✅ ALL 15 CORE ANALYTICS VISUALIZATIONS GENERATED SUCCESSFULLY!")
     logger.info(f"📊 Check {output_dir}/ for all PNG files")
     logger.info("=" * 80)
