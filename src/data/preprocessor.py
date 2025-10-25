@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+import holidays
 import numpy as np
 import pandas as pd
 
@@ -34,15 +35,33 @@ def derive_temporal_features(df: pd.DataFrame) -> pd.DataFrame:
     """
     Derive temporal features from open_dt timestamp.
 
-    Adds columns: year, month, day_of_week, hour, date.
+    Adds columns: year, month, day_of_week, hour, date, day_of_month,
+    day_of_week_num, season, is_holiday, is_weekend.
     """
     logger.info("Deriving temporal features from OPEN_DT")
 
     df["year"] = df["open_dt"].dt.year
     df["month"] = df["open_dt"].dt.month
     df["day_of_week"] = df["open_dt"].dt.day_name()
+    df["day_of_week_num"] = df["open_dt"].dt.dayofweek  # 0=Monday, 6=Sunday
     df["hour"] = df["open_dt"].dt.hour
     df["date"] = df["open_dt"].dt.date
+    df["day_of_month"] = df["open_dt"].dt.day
+
+    # Derive season (meteorological)
+    df["season"] = df["month"].map({
+        12: "Winter", 1: "Winter", 2: "Winter",
+        3: "Spring", 4: "Spring", 5: "Spring",
+        6: "Summer", 7: "Summer", 8: "Summer",
+        9: "Fall", 10: "Fall", 11: "Fall"
+    })
+
+    # Weekend flag
+    df["is_weekend"] = (df["day_of_week_num"] >= 5).astype(int)
+
+    # Holiday flag using US holidays library
+    us_holidays = holidays.US(years=range(2011, 2026))
+    df["is_holiday"] = df["date"].apply(lambda x: 1 if x in us_holidays else 0)
 
     years = sorted(df["year"].dropna().unique())
     logger.info(f"Derived features for years: {list(years)}")
@@ -51,11 +70,14 @@ def derive_temporal_features(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def calculate_resolution_time(df: pd.DataFrame) -> pd.DataFrame:
-    """Calculate resolution time in hours for closed cases."""
+    """Calculate resolution time in hours and days for closed cases."""
     logger.info("Calculating resolution times")
 
     df["resolution_hours"] = (
         (df["closed_dt"] - df["open_dt"]).dt.total_seconds() / 3600
+    )
+    df["resolution_time_days"] = (
+        (df["closed_dt"] - df["open_dt"]).dt.total_seconds() / 86400
     )
 
     resolved = df["resolution_hours"].notna().sum()
@@ -64,8 +86,8 @@ def calculate_resolution_time(df: pd.DataFrame) -> pd.DataFrame:
     if resolved > 0:
         mean_res = df["resolution_hours"].mean()
         median_res = df["resolution_hours"].median()
-        logger.info(f"Mean resolution time: {mean_res:.2f} hours")
-        logger.info(f"Median resolution time: {median_res:.2f} hours")
+        logger.info(f"Mean resolution time: {mean_res:.2f} hours ({mean_res/24:.2f} days)")
+        logger.info(f"Median resolution time: {median_res:.2f} hours ({median_res/24:.2f} days)")
 
     return df
 
