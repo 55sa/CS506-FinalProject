@@ -50,12 +50,18 @@ def main() -> None:
         default=0.1,
         help="Sampling percentage for Random Forest (default: 0.1 = 10%%)"
     )
+    parser.add_argument(
+        "--gpu",
+        action="store_true",
+        help="Enable GPU acceleration for LightGBM (requires GPU-enabled LightGBM)"
+    )
     args = parser.parse_args()
 
     logger.info("=" * 80)
     logger.info("RESOLUTION TIME PREDICTION - PHASE 2")
     logger.info("=" * 80)
     logger.info(f"Random Forest sampling: {args.sample*100}%")
+    logger.info(f"GPU acceleration: {'Enabled' if args.gpu else 'Disabled'}")
 
     # Create output directory
     output_dir = Path("outputs/figures/resolution_time")
@@ -112,7 +118,7 @@ def main() -> None:
     logger.info("=" * 80)
     logger.info("MODEL: LightGBM (Production)")
     logger.info("=" * 80)
-    lgbm_model = train_lightgbm(X_train, y_train, n_estimators=100)
+    lgbm_model = train_lightgbm(X_train, y_train, n_estimators=100, use_gpu=args.gpu)
     lgbm_mae, lgbm_r2, lgbm_pred = evaluate_lightgbm(lgbm_model, X_test, y_test)
     lgbm_importance = get_lightgbm_feature_importance(lgbm_model, feature_names, top_n=15)
     results["LightGBM"] = {"mae": lgbm_mae, "r2": lgbm_r2}
@@ -121,7 +127,7 @@ def main() -> None:
     logger.info("=" * 80)
     logger.info("MODEL: XGBoost GPU")
     logger.info("=" * 80)
-    xgb_model = train_xgboost(X_train, y_train, n_estimators=100, use_gpu=True)
+    xgb_model = train_xgboost(X_train, y_train, n_estimators=100, use_gpu=args.gpu)
     xgb_mae, xgb_r2, xgb_pred = evaluate_xgboost(xgb_model, X_test, y_test)
     xgb_importance = get_xgboost_feature_importance(xgb_model, feature_names, top_n=15)
     results["XGBoost"] = {"mae": xgb_mae, "r2": xgb_r2}

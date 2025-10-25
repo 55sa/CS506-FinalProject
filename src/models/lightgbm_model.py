@@ -18,23 +18,32 @@ def train_lightgbm(
     n_estimators: int = 100,
     learning_rate: float = 0.1,
     max_depth: int = -1,
-    random_state: int = 42
+    random_state: int = 42,
+    use_gpu: bool = False
 ) -> LGBMRegressor:
     """Train LightGBM regression model."""
-    logger.info(f"Training LightGBM model with {n_estimators} trees")
+    device_type = "gpu" if use_gpu else "cpu"
+    logger.info(f"Training LightGBM model with {n_estimators} trees on {device_type.upper()}")
 
-    model = LGBMRegressor(
-        n_estimators=n_estimators,
-        learning_rate=learning_rate,
-        max_depth=max_depth,
-        random_state=random_state,
-        device='gpu',  # 启用GPU训练
-        gpu_platform_id=0,  # GPU平台ID
-        gpu_device_id=0,     # GPU设备ID
-        n_jobs=-1,
-        verbose=-1
-    )
+    # Base parameters
+    params = {
+        "n_estimators": n_estimators,
+        "learning_rate": learning_rate,
+        "max_depth": max_depth,
+        "random_state": random_state,
+        "n_jobs": -1,
+        "verbose": -1
+    }
 
+    # Add GPU parameters if enabled
+    if use_gpu:
+        params.update({
+            "device": "gpu",
+            "gpu_platform_id": 0,
+            "gpu_device_id": 0
+        })
+
+    model = LGBMRegressor(**params)
     model.fit(X_train, y_train)
     logger.info("LightGBM training complete")
 

@@ -20,10 +20,11 @@ python -m src.predict_resolution_time
 ```
 Trains 3 ML models and generates plots → `outputs/figures/resolution_time/` (~2-3 min)
 
-**Optional:** Adjust Random Forest sampling:
+**Optional:** Adjust Random Forest sampling and enable GPU:
 ```bash
 python -m src.predict_resolution_time --sample 0.1  # 10% (default, fast)
 python -m src.predict_resolution_time --sample 1.0  # 100% (slower, more accurate)
+python -m src.predict_resolution_time --gpu         # Enable GPU for LightGBM
 ```
 
 
