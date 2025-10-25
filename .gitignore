@@ -45,12 +45,7 @@ data/processed/*.parquet
 !data/processed/.gitkeep
 
 # Output files
-outputs/figures/*.png
-outputs/figures/*.pdf
-outputs/figures/*.html
-outputs/reports/*.txt
-outputs/reports/*.md
-outputs/reports/*.html
+outputs/*
 
 # Keep directory structure
 !outputs/figures/.gitkeep

@@ -5,13 +5,14 @@ Analyzing 14 years (2011-2025) of Boston 311 service requests to identify trends
 
 **Team:** Jiahao He, Thong Dao, Sundeep Routhu, Yijia Chen, Julyssa Michelle Villa Machado
 
-**Current Phase:** Core Analytics Goals (exploratory data analysis and visualization)
+**Current Phase:** Phase 2 - Predictive Modeling (machine learning models for forecasting and prediction)
 
 ## Tech Stack
 - **Language:** Python 3.10+
 - **Data Processing:** pandas, numpy
 - **Visualization:** matplotlib, seaborn, plotly (for interactive maps)
 - **Geospatial:** geopandas, folium
+- **Machine Learning:** scikit-learn, LightGBM, XGBoost
 - **Logging:** Python standard library `logging`
 - **Environment:** Jupyter notebooks for exploration, .py scripts for production analysis
 
@@ -39,7 +40,8 @@ Key principles:
 │       └── 311_cleaned.csv  # Output from preprocessor.py
 ├── notebooks/            # Exploratory analysis (Jupyter)
 ├── src/
-│   ├── core_analysis.py  # 🎯 MAIN SCRIPT: Generates all 15 visualizations
+│   ├── core_analysis.py  # 🎯 Phase 1: Generates all 15 visualizations
+│   ├── predict_resolution_time.py  # 🎯 Phase 2: Resolution time prediction
 │   ├── data/
 │   │   ├── loader.py     # Load and merge yearly CSV files
 │   │   └── preprocessor.py # Clean and derive features
@@ -47,12 +49,19 @@ Key principles:
 │   │   ├── temporal.py   # Year-over-year trends, daily averages
 │   │   ├── categorical.py # Request types by neighborhood, dept
 │   │   └── resolution.py  # Resolution time calculations
+│   ├── models/           # 🤖 Machine learning models
+│   │   ├── feature_engineering.py  # Feature derivation for ML
+│   │   ├── baseline.py   # Linear regression baseline
+│   │   ├── random_forest.py  # Random forest model
+│   │   └── lightgbm.py   # LightGBM production model
 │   └── visualization/    # 📈 Visualization functions (plotting only)
 │       ├── maps.py       # Choropleth and heatmaps
 │       ├── temporal.py   # Time series plots
-│       └── comparative.py # Bar charts, scatter plots
+│       ├── comparative.py # Bar charts, scatter plots
+│       └── model_plots.py  # Model evaluation plots
 ├── outputs/
-│   ├── figures/          # Generated PNG charts (15 files, 300 DPI)
+│   ├── figures/          # Phase 1: Generated PNG charts (15 files, 300 DPI)
+│   │   └── resolution_time/  # Phase 2: Model evaluation plots
 │   └── reports/          # Analysis summaries
 ├── download_data.py      # Automated data download script
 ├── claude.md             # This file - project instructions
@@ -181,9 +190,8 @@ logger.warning(f"Found {missing_count} records with missing CLOSED_DT")
 - ❌ **DON'T:** Write inline analysis logic when a function already exists in `src/analysis/`
 - ❌ **DON'T:** Put analysis calculations in visualization functions
 
-## Current Focus: Core Analytics Goals
+## Phase 1: Core Analytics Goals ✅ COMPLETED
 
-### ✅ COMPLETED - Core Analytics Implementation
 All core analytics goals have been implemented in `src/core_analysis.py`:
 
 1. ✅ Total volume of requests per year - `calculate_requests_per_year()`
@@ -199,15 +207,61 @@ All core analytics goals have been implemented in `src/core_analysis.py`:
 11. ✅ Resolution time by QUEUE and neighborhood - uses resolution module
 12. ✅ Case status breakdown - `calculate_case_status_breakdown()`
 
-**To run:** `python src/core_analysis.py`
+**To run:** `python -m src.core_analysis`
 **Output:** 15 PNG visualizations in `outputs/figures/`
 
-### What NOT to Do (Yet)
-- ❌ No machine learning models (that's Phase 2)
-- ❌ No predictions or forecasting
-- ❌ No clustering or segmentation
+---
+
+## Phase 2: Predictive Modeling 🎯 CURRENT FOCUS
+
+### Task 1: Resolution Time Prediction 🚧 IN PROGRESS
+
+**Objective:** Develop a model that predicts how long a 311 service request will take to close (resolution_time_days) using historical Boston 311 request data (2011–2025).
+
+**Deliverables:**
+1. ✅ Feature engineering module (`src/models/feature_engineering.py`)
+   - Temporal features: year, month, day_of_week, season, is_holiday
+   - Categorical encoding: subject, reason, type, queue, department
+   - Geographic features: neighborhood, zipcode, districts
+   - Derived metrics: rolling averages (optional)
+
+2. ✅ Model implementations:
+   - `src/models/baseline.py` - Linear Regression baseline
+   - `src/models/random_forest.py` - Random Forest with feature importance
+   - `src/models/lightgbm.py` - LightGBM production model
+
+3. ✅ Visualization module (`src/visualization/model_plots.py`)
+   - Feature importance plot (top 15 predictors)
+   - Predicted vs Actual scatter plot
+
+4. ✅ Main prediction script (`src/predict_resolution_time.py`)
+   - Load cleaned data
+   - Derive target variable (resolution_time_days)
+   - Train and evaluate all models
+   - Log metrics (MAE, R²)
+   - Save plots to `outputs/figures/resolution_time/`
+
+**Target Variable:**
+- `resolution_time_days = (closed_dt - open_dt) / 86400` (seconds to days)
+- Only closed cases with valid CLOSED_DT
+
+**Evaluation Metrics:**
+- MAE (Mean Absolute Error) - average prediction error in days
+- R² Score - variance explained by the model
+- Optional: MAPE (Mean Absolute Percentage Error)
+
+**To run:** `python -m src.predict_resolution_time`
+**Output:**
+- `outputs/figures/resolution_time/feature_importance.png`
+- `outputs/figures/resolution_time/predicted_vs_actual.png`
+- Console logs with model metrics
+
+### What NOT to Do
+- ❌ Don't modify existing Phase 1 code (`src/core_analysis.py`, `src/analysis/*`, `src/data/*`)
+- ❌ Don't create new preprocessing pipelines (use existing `data/processed/311_cleaned.csv`)
+- ❌ Don't add clustering or segmentation (not part of current task)
 - ❌ No database queries (work with CSV files directly)
-- ❌ No unit tests for now (exploratory phase)
+- ❌ No unit tests for now (rapid prototyping phase)
 
 ## Data Handling Preferences
 
@@ -411,11 +465,14 @@ When implementing features, consider asking:
 # Download data (one-time setup)
 python download_data.py
 
-# Generate all 15 visualizations
-python src/core_analysis.py
+# Phase 1: Generate all 15 visualizations
+python -m src.core_analysis
+
+# Phase 2: Run resolution time prediction
+python -m src.predict_resolution_time
 
 # Preprocess data only
-python src/data/preprocessor.py
+python -m src.data.preprocessor
 
 # Format code
 black src/
