@@ -25,6 +25,11 @@ from src.models.random_forest import (
     get_feature_importance,
     train_random_forest,
 )
+from src.models.xgboost_model import (
+    evaluate_xgboost,
+    get_xgboost_feature_importance,
+    train_xgboost,
+)
 from src.utils.logger import get_logger
 from src.visualization.model_plots import (
     plot_feature_importance,
@@ -112,6 +117,15 @@ def main() -> None:
     lgbm_importance = get_lightgbm_feature_importance(lgbm_model, feature_names, top_n=15)
     results["LightGBM"] = {"mae": lgbm_mae, "r2": lgbm_r2}
 
+    # Model 4: XGBoost GPU
+    logger.info("=" * 80)
+    logger.info("MODEL: XGBoost GPU")
+    logger.info("=" * 80)
+    xgb_model = train_xgboost(X_train, y_train, n_estimators=100, use_gpu=True)
+    xgb_mae, xgb_r2, xgb_pred = evaluate_xgboost(xgb_model, X_test, y_test)
+    xgb_importance = get_xgboost_feature_importance(xgb_model, feature_names, top_n=15)
+    results["XGBoost"] = {"mae": xgb_mae, "r2": xgb_r2}
+
     # Generate visualizations
     logger.info("=" * 80)
     logger.info("GENERATING VISUALIZATIONS")
@@ -127,6 +141,11 @@ def main() -> None:
         lgbm_importance,
         str(output_dir / "feature_importance_lgbm.png"),
         "LightGBM"
+    )
+    plot_feature_importance(
+        xgb_importance,
+        str(output_dir / "feature_importance_xgb.png"),
+        "XGBoost"
     )
 
     # Predicted vs actual plots
@@ -144,6 +163,11 @@ def main() -> None:
         y_test, lgbm_pred,
         str(output_dir / "predicted_vs_actual_lgbm.png"),
         "LightGBM", lgbm_mae, lgbm_r2
+    )
+    plot_predicted_vs_actual(
+        y_test, xgb_pred,
+        str(output_dir / "predicted_vs_actual_xgb.png"),
+        "XGBoost", xgb_mae, xgb_r2
     )
 
     # Model comparison plot
