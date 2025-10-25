@@ -150,7 +150,7 @@ def main() -> None:
     plot_model_comparison(results, str(output_dir / "model_comparison.png"))
 
     # Summary
-    logger.info("\n" + "=" * 80)
+    logger.info("=" * 80)
     logger.info("SUMMARY - MODEL PERFORMANCE")
     logger.info("=" * 80)
     for model_name, metrics in results.items():

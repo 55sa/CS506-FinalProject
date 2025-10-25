@@ -30,8 +30,10 @@ def plot_feature_importance(
         data=importance_df,
         x="importance",
         y="feature",
+        hue="feature",
         ax=ax,
-        palette="viridis"
+        palette="viridis",
+        legend=False
     )
 
     ax.set_title(f"Top {len(importance_df)} Feature Importances - {model_name}", fontsize=14, pad=20)
