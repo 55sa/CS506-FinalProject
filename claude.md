@@ -207,7 +207,7 @@ All core analytics goals have been implemented in `src/core_analysis.py`:
 11. ✅ Resolution time by QUEUE and neighborhood - uses resolution module
 12. ✅ Case status breakdown - `calculate_case_status_breakdown()`
 
-**To run:** `python src/core_analysis.py`
+**To run:** `python -m src.core_analysis`
 **Output:** 15 PNG visualizations in `outputs/figures/`
 
 ---
@@ -250,7 +250,7 @@ All core analytics goals have been implemented in `src/core_analysis.py`:
 - R² Score - variance explained by the model
 - Optional: MAPE (Mean Absolute Percentage Error)
 
-**To run:** `python src/predict_resolution_time.py`
+**To run:** `python -m src.predict_resolution_time`
 **Output:**
 - `outputs/figures/resolution_time/feature_importance.png`
 - `outputs/figures/resolution_time/predicted_vs_actual.png`
@@ -466,13 +466,13 @@ When implementing features, consider asking:
 python download_data.py
 
 # Phase 1: Generate all 15 visualizations
-python src/core_analysis.py
+python -m src.core_analysis
 
 # Phase 2: Run resolution time prediction
-python src/predict_resolution_time.py
+python -m src.predict_resolution_time
 
 # Preprocess data only
-python src/data/preprocessor.py
+python -m src.data.preprocessor
 
 # Format code
 black src/

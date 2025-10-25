@@ -10,20 +10,20 @@ Downloads ~1.8 GB to `data/raw/` (~5-10 min)
 
 ### 2. Core Analytics
 ```bash
-python src/core_analysis.py
+python -m src.core_analysis
 ```
 Generates 15 visualizations → `outputs/figures/` (~2-3 min)
 
 ### 3. Resolution Time Prediction
 ```bash
-python src/predict_resolution_time.py
+python -m src.predict_resolution_time
 ```
 Trains 3 ML models and generates plots → `outputs/figures/resolution_time/` (~2-3 min)
 
 **Optional:** Adjust Random Forest sampling:
 ```bash
-python src/predict_resolution_time.py --sample 0.1  # 10% (default, fast)
-python src/predict_resolution_time.py --sample 1.0  # 100% (slower, more accurate)
+python -m src.predict_resolution_time --sample 0.1  # 10% (default, fast)
+python -m src.predict_resolution_time --sample 1.0  # 100% (slower, more accurate)
 ```
 
 
@@ -56,7 +56,7 @@ python download_data.py  # Download data first
 ```bash
 # Run from project root
 cd /path/to/CS506-FinalProject
-python src/core_analysis.py
+python -m src.core_analysis
 ```
 
 **Out of memory**
