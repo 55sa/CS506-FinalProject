@@ -28,6 +28,9 @@ def train_lightgbm(
         learning_rate=learning_rate,
         max_depth=max_depth,
         random_state=random_state,
+        device='gpu',  # 启用GPU训练
+        gpu_platform_id=0,  # GPU平台ID
+        gpu_device_id=0,     # GPU设备ID
         n_jobs=-1,
         verbose=-1
     )
