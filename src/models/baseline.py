@@ -32,18 +32,7 @@ def evaluate_model(
     X_test: pd.DataFrame,
     y_test: pd.Series
 ) -> Tuple[float, float, pd.Series]:
-    """
-    Evaluate model performance.
-
-    Returns:
-    --------
-    mae : float
-        Mean Absolute Error in days
-    r2 : float
-        R² score
-    predictions : pd.Series
-        Model predictions on test set
-    """
+    """Evaluate model and return MAE, R², and predictions."""
     logger.info("Evaluating model on test set")
 
     # Make predictions
