@@ -195,7 +195,7 @@ def main() -> None:
     logger.info(f"  MAE: {best_model[1]['mae']:.2f} days")
     logger.info(f"  R²: {best_model[1]['r2']:.4f}")
 
-    logger.info("\n" + "=" * 80)
+    logger.info("=" * 80)
     logger.info("PREDICTION PIPELINE COMPLETE")
     logger.info(f"Outputs saved to: {output_dir}")
     logger.info("=" * 80)
