@@ -49,17 +49,19 @@ We implemented `src/core_analysis.py` to generate all **15 core analytical visua
 | # | Visualization | Key Findings |
 |--:|----------------|---------------|
 | 1 | Total requests per year (2011–2025) | Requests have steadily increased, peaking in 2024. |
-| 2 | Top 20 request types overall | “Parking Enforcement” is the most frequent (≈15%). |
-| 3 | Top request types by neighborhood | Dorchester and South Boston consistently lead. |
-| 4–6 | Trends by SUBJECT, REASON, QUEUE | Departments like Public Works and BTD dominate requests. |
-| 7 | Request volume by SOURCE | The Citizens Connect App now accounts for ~38% of submissions. |
-| 8 | Average daily contacts per year | Daily requests nearly doubled since 2013. |
-| 9 | Top 5 request types over time | Seasonal peaks visible for sanitation and graffiti removal. |
-| 10 | Average resolution time by QUEUE | Large disparity between fast and slow queues. |
-| 11 | Resolution time heatmap (QUEUE × Neighborhood) | Identified slower-response neighborhoods. |
-| 12 | Case status breakdown (Closed/Open/Null) | 90.9% closed, 7% open, 2% missing data. |
-| 13 | Top 20 neighborhoods by request volume | Dorchester has the highest request density. |
-| 14 | Resolution time distribution | Skewed right; most cases closed within 1 day, but outliers exist. |
+| 2 | Top 20 request types overall | “Parking Enforcement” is the most frequent type of request (≈15%). |
+| 3 | Top request types by neighborhood | Dorchester and South Boston consistently have the most requests. |
+| 4 | Trends by SUBJECT | Vast majority of requests are received by the Public Works Department. |
+| 5 | Trends by REASON | Most requests concern enforcement & abandoned vehicles and street cleaning. |
+| 6 | Trends by QUEUE | BTDT_Parking Enforcement is the queue that generally receives the most requests. |
+| 7 | Request volume by SOURCE | The Citizens Connect App now accounts for ~38% of submissions, but interestingly, most requests in 2025 are employee generated. |
+| 8 | Average daily contacts per year | Daily requests have nearly doubled since 2013. |
+| 9 | Top 5 request types over time | Parking enforcement is consistently the vast majority of cases in recent years. |
+| 10 | Average resolution time by QUEUE | Noticable disparity between transportation projects, long-term street light repair, and new tree requests compared to other queues. |
+| 11 | Resolution time heatmap (QUEUE × Neighborhood) | Identified slower-response neighborhoods for each common queue type. |
+| 12 | Case status breakdown (Closed/Open/Null) | 90.9% closed, 9.1% open. |
+| 13 | Top 20 neighborhoods by request volume | Dorchester has the highest request density by far. |
+| 14 | Resolution time distribution | Insight into common requests: new tree requests and long-term street light repair take the longest by far, while snow reports are cleared the fastest. |
 | 15 | Status trends year-over-year | Overall closure rate stable despite request volume growth. |
 
 **Runtime:** ~2–3 minutes for full dataset  
