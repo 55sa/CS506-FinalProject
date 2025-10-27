@@ -132,7 +132,7 @@ Our first modeling task focuses on **predicting service resolution time (in days
 
 ---
 
-## 7. Repository Structure
+## 7. Project Structure
 ```
 .
 ├── data/
