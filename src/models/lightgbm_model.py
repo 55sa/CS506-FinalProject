@@ -15,21 +15,31 @@ logger = logging.getLogger(__name__)
 def train_lightgbm(
     X_train: pd.DataFrame,
     y_train: pd.Series,
-    n_estimators: int = 100,
-    learning_rate: float = 0.1,
-    max_depth: int = -1,
+    n_estimators: int = 2504,
+    learning_rate: float = 0.08664631853295084,
+    num_leaves: int = 5,
+    reg_alpha: float = 0.005144845893441943,
+    reg_lambda: float = 0.05549669560219034,
+    max_bin: int = 1024,
+    colsample_bytree: float = 1.0,
+    min_child_samples: int = 3,
     random_state: int = 42,
-    use_gpu: bool = False
+    use_gpu: bool = True
 ) -> LGBMRegressor:
-    """Train LightGBM regression model."""
-    device_type = "gpu" if use_gpu else "cpu"
-    logger.info(f"Training LightGBM model with {n_estimators} trees on {device_type.upper()}")
+    """Train LightGBM regression model with AutoML-optimized parameters."""
+    logger.info(f"Training LightGBM model with {n_estimators} trees (AutoML optimized)")
+    logger.info(f"AutoML parameters: max_bin={max_bin}, num_leaves={num_leaves}, learning_rate={learning_rate:.6f}")
 
-    # Base parameters
+    # Base parameters with AutoML optimization
     params = {
         "n_estimators": n_estimators,
         "learning_rate": learning_rate,
-        "max_depth": max_depth,
+        "num_leaves": num_leaves,
+        "reg_alpha": reg_alpha,
+        "reg_lambda": reg_lambda,
+        "max_bin": max_bin,
+        "colsample_bytree": colsample_bytree,
+        "min_child_samples": min_child_samples,
         "random_state": random_state,
         "n_jobs": -1,
         "verbose": -1
@@ -44,6 +54,7 @@ def train_lightgbm(
         })
 
     model = LGBMRegressor(**params)
+
     model.fit(X_train, y_train)
     logger.info("LightGBM training complete")
 

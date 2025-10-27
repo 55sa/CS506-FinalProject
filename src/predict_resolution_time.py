@@ -118,7 +118,7 @@ def main() -> None:
     logger.info("=" * 80)
     logger.info("MODEL: LightGBM (Production)")
     logger.info("=" * 80)
-    lgbm_model = train_lightgbm(X_train, y_train, n_estimators=100, use_gpu=args.gpu)
+    lgbm_model = train_lightgbm(X_train, y_train, use_gpu=args.gpu)
     lgbm_mae, lgbm_r2, lgbm_pred = evaluate_lightgbm(lgbm_model, X_test, y_test)
     lgbm_importance = get_lightgbm_feature_importance(lgbm_model, feature_names, top_n=15)
     results["LightGBM"] = {"mae": lgbm_mae, "r2": lgbm_r2}
