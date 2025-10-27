@@ -22,8 +22,11 @@ At this midterm stage, our team has:
 ## 2. Data Processing Summary
 
 ### 2.1 Data Source
-All 311 service request data were downloaded from the [Boston Open Data Portal](https://data.boston.gov/dataset/311-service-requests) using our automated script `download_data.py`.  
-The dataset includes request details such as:
+All 311 service request data were automatically downloaded from the [Boston Open Data Portal](https://data.boston.gov/dataset/311-service-requests) using our custom script `download_data.py`.  
+The script employs **robust retry logic (`requests` + `urllib3.Retry`)** to handle network interruptions, automatically skips existing files, and logs progress for each year (2011–2025).  
+Each yearly file (e.g., `311_requests_2020.csv`) is stored under `data/raw/`, totaling more than **2 GB of raw data**.  
+
+The dataset includes detailed request information such as:
 - `OPEN_DT`, `CLOSED_DT`, `CASE_STATUS`
 - Request category (`TYPE`, `REASON`, `QUEUE`, `SUBJECT`)
 - `LOCATION` and `NEIGHBORHOOD`
@@ -33,12 +36,15 @@ The dataset includes request details such as:
 | Step | Description |
 |------|--------------|
 | **Data Integration** | Merged 15 yearly CSV files (2011–2025) into one unified dataframe (~3.2M rows after cleaning). |
-| **Column Normalization** | Unified inconsistent column names and standardized timestamp formats. |
-| **Missing Data Handling** | Dropped rows with missing `OPEN_DT`, imputed null categorical values where appropriate. |
-| **Feature Engineering** | Extracted `year`, `month`, `day_of_week`, `is_weekend`, and computed `resolution_days = CLOSED_DT - OPEN_DT`. |
-| **Outlier Filtering** | Excluded extreme cases (`resolution_days > 365`). |
-| **Encoding** | Applied consistent label encoding for categorical variables (`TYPE`, `QUEUE`, `NEIGHBORHOOD`, etc.). |
-| **Export** | Cleaned dataset stored at `data/processed/311_cleaned.csv`. |
+| **Datetime Cleaning** | Converted `OPEN_DT` and `CLOSED_DT` columns to datetime, coercing invalid timestamps to `NaT`. |
+| **Record Validation** | Dropped rows missing `OPEN_DT` and removed duplicate `CASE_ENQUIRY_ID`s to ensure data uniqueness. |
+| **Column Normalization** | Stripped whitespace, standardized text case, and replaced `"NaN"` / `"None"` / empty strings with proper null values. |
+| **Feature Engineering** | Derived multiple temporal features: `year`, `month`, `day_of_week`, `hour`, `day_of_month`, `season`, `is_weekend`, and `is_holiday` (using the `holidays` library). |
+| **Resolution Time Calculation** | Computed both `resolution_hours` and `resolution_time_days` for closed requests. |
+| **Outlier Filtering** | Excluded extreme values (`resolution_time_days > 365`). |
+| **Data Quality Validation** | Generated summary statistics on duplicates, missing fields, and case status proportions. |
+| **Encoding** | Applied consistent label encoding for categorical variables (`TYPE`, `QUEUE`, `REASON`, `NEIGHBORHOOD`, etc.). |
+| **Export** | Final cleaned dataset saved as `data/processed/311_cleaned.csv` for downstream modeling. |
 
 ---
 
@@ -46,58 +52,65 @@ The dataset includes request details such as:
 
 We implemented `src/core_analysis.py` to generate all **15 core analytical visualizations**, corresponding to the analytical goals defined in our project plan.
 
-| # | Visualization | Key Findings |
-|--:|----------------|---------------|
-| 1 | Total requests per year (2011–2025) | Requests have steadily increased, peaking in 2024. |
-| 2 | Top 20 request types overall | “Parking Enforcement” is the most frequent type of request (≈15%). |
-| 3 | Top request types by neighborhood | Dorchester and South Boston consistently have the most requests. |
-| 4 | Trends by SUBJECT | Vast majority of requests are received by the Public Works Department. |
-| 5 | Trends by REASON | Most requests concern enforcement & abandoned vehicles and street cleaning. |
-| 6 | Trends by QUEUE | BTDT_Parking Enforcement is the queue that generally receives the most requests. |
-| 7 | Request volume by SOURCE | The Citizens Connect App now accounts for ~38% of submissions, but interestingly, most requests in 2025 are employee generated. |
-| 8 | Average daily contacts per year | Daily requests have nearly doubled since 2013. |
-| 9 | Top 5 request types over time | Parking enforcement is consistently the vast majority of cases in recent years. |
-| 10 | Average resolution time by QUEUE | Noticable disparity between transportation projects, long-term street light repair, and new tree requests compared to other queues. |
-| 11 | Resolution time heatmap (QUEUE × Neighborhood) | Identified slower-response neighborhoods for each common queue type. |
-| 12 | Case status breakdown (Closed/Open/Null) | 90.9% closed, 9.1% open. |
-| 13 | Top 20 neighborhoods by request volume | Dorchester has the highest request density by far. |
+| # | Visualization | Key Findings                                                                                                                                           |
+|--:|----------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1 | Total requests per year (2011–2025) | Requests have steadily increased, peaking in 2024.                                                                                                     |
+| 2 | Top 20 request types overall | “Parking Enforcement” is the most frequent type of request.                                                                                            |
+| 3 | Top request types by neighborhood | Dorchester and South Boston consistently have the most requests, with Parking Enforcement recurring as the top issue.                                  |
+| 4 | Trends by SUBJECT | Vast majority of requests are received by the Public Works Department.                                                                                 |
+| 5 | Trends by REASON | Most requests concern enforcement & abandoned vehicles and street cleaning after 2016.                                                                 |
+| 6 | Trends by QUEUE | BTDT_Parking Enforcement is the queue that expands the fastest and generally receives the most requests after 2016.                                    |
+| 7 | Request volume by SOURCE | Use of the Citizens Connect App surged after 2015, but interestingly, most requests in 2025 are employee generated.                                    |
+| 8 | Average daily contacts per year | Daily requests have nearly doubled since 2013.                                                                                                         |
+| 9 | Top 5 request types over time | Parking enforcement is consistently the vast majority of cases in recent years.                                                                        |
+| 10 | Average resolution time by QUEUE | Average resolution varies widely; infrastructure repairs take the longest (>140 days).                                                                 |
+| 11 | Resolution time heatmap (QUEUE × Neighborhood) | Resolution time is longest in Hyde Park, East Boston, and Dorchester, especially for ISD_Building and Tree Maintenance queues.                         |
+| 12 | Case status breakdown (Closed/Open/Null) | 90.95% closed, 9.05% open.                                                                                                                             |
+| 13 | Top 20 neighborhoods by request volume | Dorchester has the highest request density by far.                                                                                                     |
 | 14 | Resolution time distribution | Insight into common requests: new tree requests and long-term street light repair take the longest by far, while snow reports are cleared the fastest. |
-| 15 | Status trends year-over-year | Overall closure rate stable despite request volume growth. |
+| 15 | Status trends year-over-year | Overall closure rate stable despite request volume growth.                                                                                             |
 
 **Runtime:** ~2–3 minutes for full dataset  
 **Output Directory:** `outputs/figures/` (15 PNGs)
 
 ---
 
-## 4. Data Modeling (So Far)
+## 4. Data Modeling
 
 ### 4.1 Objective
-Our first modeling task focuses on **predicting service resolution time (in days)** based on request attributes.
+Our first modeling goal is to **predict service resolution time (in days)** using request-level attributes such as type, location, and submission channel.
+
+---
 
 ### 4.2 Feature Preparation (`feature_prep.py`)
-- **Temporal features:** year, month, day_of_week, season  
-- **Categorical features:** TYPE, REASON, QUEUE, SOURCE, NEIGHBORHOOD  
-- **Target variable:** `resolution_days` (filtered to ≤ 365)  
-- Applied `LabelEncoder` for categorical variables and train-test split (80/20).
+
+- **Temporal features:** `year`, `month`, `day_of_week_num`, `hour`, `day_of_month`, `is_weekend`, `is_holiday`  
+- **Categorical features:** `subject`, `department`, `reason`, `type`, `queue`, `neighborhood`, `source`, `closure_reason`, `location_zipcode`, `fire_district`, `pwd_district`, `police_district`, `city_council_district`, `season`  
+- **Target variable:** `resolution_time_days` (only non-null and ≥ 0 values kept)  
+- **Encoding & Cleaning:**  
+  - Missing categories replaced with `"Unknown"`  
+  - Label-encoded all categorical columns  
+  - Numeric columns imputed using the **median**  
+- **Split:** 80 % training / 20 % testing (`random_state = 42`)
 
 ---
 
 ### 4.3 Models Implemented
 
-| Model | File | Description | Role |
-|--------|------|-------------|------|
-| **Linear Regression** | `baseline.py` | Baseline model, interpretable coefficients | Establishes RMSE baseline |
-| **Random Forest Regressor** | `random_forest.py` | Captures non-linear effects | Measures feature importance |
-| **XGBoost Regressor** | `xgboost_model.py` | Gradient boosting model | Achieves best predictive accuracy |
-| **LightGBM Regressor** | `lightgbm_model.py` | Fast tree boosting with GPU | Comparable accuracy, faster training |
+| Model | File | Description |
+|--------|------|-------------|
+| **Linear Regression** | `baseline.py` | Ordinary Least Squares regression; outputs **MAE** and **R²**. |
+| **Random Forest Regressor** | `random_forest.py` | Ensemble of decision trees (`n_estimators`, `max_depth`) capturing non-linear patterns. |
+| **XGBoost Regressor** | `xgboost_model.py` | Gradient-boosted trees (`tree_method='hist'`, `learning_rate`, `max_depth`, `n_estimators`); **GPU-optional** (`device='cuda:0'`). |
+| **LightGBM Regressor** | `lightgbm_model.py` | Fast gradient boosting (`learning_rate`, `max_depth`, `n_estimators`); **GPU-optional** (`device='gpu'`). |
+
 
 ---
 
 ### 4.4 Evaluation Metrics
 
-- **Regression metrics:** RMSE, MAE, R²  
-- **Validation split:** 80% training / 20% testing  
-- **Planned upgrade:** temporal split (Train: 2011–2023, Val: 2024, Test: 2025)
+- **Metrics:** Mean Absolute Error (**MAE**) and Coefficient of Determination (**R²**)   
+- **Validation Strategy:** 80 % train / 20 % test random split
 
 ---
 
@@ -136,17 +149,7 @@ Our first modeling task focuses on **predicting service resolution time (in days
 
 ---
 
-## 6. Preliminary Insights
-
-1. **Request Volume Growth:** 311 requests roughly doubled between 2011 and 2024.  
-2. **Efficiency Improvements:** Median resolution time < 1 day; most outliers stem from long-tail cases.  
-3. **Geographic Patterns:** Dorchester generates most requests and tends to have longer resolution times.  
-4. **Submission Channels:** Mobile app has become the dominant reporting method.  
-5. **Predictive Potential:** Tree-based models (XGB/LGBM) can explain ~70% of variance in resolution time.
-
----
-
-## 7. Project Structure
+## 6. Project Structure
 ```
 .
 ├── data/
@@ -179,7 +182,7 @@ Our first modeling task focuses on **predicting service resolution time (in days
 
 
 
-## 8. Future Plan
+## 7. Future Plan
 
 Our next steps will focus on **model tuning and optimization** to further improve predictive accuracy:
 
