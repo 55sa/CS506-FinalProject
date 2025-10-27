@@ -105,22 +105,34 @@ Our first modeling task focuses on **predicting service resolution time (in days
 
 | Model | RMSE (days) | MAE (days) | R² | Notes |
 |-------|--------------|------------|----|-------|
-| Linear Regression | 19.3 | 9.6 | 0.41 | Baseline; captures broad linear trend |
-| Random Forest | 14.7 | 7.9 | 0.62 | Improves non-linear fit |
-| XGBoost | **13.2** | **6.8** | **0.69** | Best performance so far |
-| LightGBM | 13.5 | 7.1 | 0.67 | Nearly tied with XGBoost, faster runtime |
+| Linear Regression | 46.85 | 46.85 | 0.03 | Baseline model; poor fit, underestimates long cases |
+| Random Forest | **5.61** | **5.61** | **0.96** | Best overall performance; captures non-linear patterns extremely well |
+| XGBoost | 15.38 | 15.38 | 0.90 | Strong performance; slightly underfits long-tail cases |
+| LightGBM | 12.34 | 12.34 | 0.93 | Excellent trade-off between accuracy and speed |
 
-**Feature Importance (XGBoost):**
-1. `QUEUE`
-2. `TYPE`
-3. `NEIGHBORHOOD`
-4. `REASON`
-5. `SOURCE`
+**Model Comparison Plots:**
+- `model_comparison.png` — Side-by-side MAE and R² comparison  
+- `predicted_vs_actual_*.png` — Scatter plots of predicted vs actual resolution time for each model  
+
+**Feature Importances:**
+- `feature_importance_xgb.png` — XGBoost top features  
+- `feature_importance_rf.png` — Random Forest top features  
+- `feature_importance_lgbm.png` — LightGBM top features  
+
+**Top Predictive Features (LightGBM):**
+1. `closure_reason_encoded`
+2. `year`
+3. `queue_encoded`
+4. `reason_encoded`
+5. `type_encoded`
 
 **Observations:**
-- Resolution time is highly dependent on operational queue and request type.
-- Tree-based models outperform the linear baseline substantially.
-- Log-transforming the target variable reduces skew and stabilizes predictions.
+- Random Forest achieved the highest \(R^2\) (0.96), indicating strong ability to capture complex interactions.  
+- XGBoost and LightGBM show excellent accuracy while being computationally efficient.  
+- `closure_reason_encoded`, `year`, and `queue_encoded` consistently appear as dominant predictors across all models.  
+- Linear Regression fails to capture non-linear effects, confirming the need for ensemble tree methods.  
+- Fine-tuning **learning rate** and **tree depth** for XGBoost/LightGBM is expected to further improve performance.  
+
 
 ---
 
