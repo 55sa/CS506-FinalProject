@@ -162,3 +162,21 @@ Our first modeling task focuses on **predicting service resolution time (in days
 └── report.md             # This file
 
 ```
+
+
+
+## 8. Future Plan
+
+Our next steps will focus on **model tuning and optimization** to further improve predictive accuracy:
+
+- **Hyperparameter Tuning for XGBoost and LightGBM:**  
+  We plan to systematically tune key hyperparameters — especially the **learning rate**, along with `max_depth`, `n_estimators`, `subsample`, and `colsample_bytree` — using **Grid Search** and **Bayesian Optimization**.  
+  Adjusting the learning rate will allow the models to converge more smoothly and avoid overfitting, potentially improving RMSE and \(R^2\) scores.
+
+- **Feature Engineering Enhancements:**  
+  Add more temporal and spatial interaction features (e.g., `month × neighborhood`, holiday indicators, weather conditions) to capture contextual effects on resolution time.
+
+- **Model Comparison and Ensemble Methods:**  
+  Combine XGBoost and LightGBM predictions using simple averaging or stacking to test for further gains.
+
+
