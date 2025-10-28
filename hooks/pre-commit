@@ -1,0 +1,90 @@
+#!/bin/bash
+
+# Pre-commit hook for Python linting and formatting
+# Auto-fixes: black, isort
+# Checks only: flake8, mypy
+
+set -e
+
+echo "🔍 Running pre-commit checks..."
+
+# Get list of staged Python files
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep '\.py$' || true)
+
+if [ -z "$STAGED_FILES" ]; then
+    echo "✅ No Python files to check"
+    exit 0
+fi
+
+echo "📝 Checking Python file(s)..."
+
+# Flag to track if any check fails
+FAILED=0
+FILES_MODIFIED=0
+
+# 1. Black - Code Formatter (AUTO-FIX)
+echo ""
+echo "1️⃣  Running Black (auto-formatting)..."
+if black --line-length 100 $STAGED_FILES 2>&1; then
+    echo "   ✅ Black: Files formatted"
+    FILES_MODIFIED=1
+else
+    echo "   ❌ Black: Failed to format"
+    FAILED=1
+fi
+
+# 2. isort - Import Sorting (AUTO-FIX)
+echo ""
+echo "2️⃣  Running isort (auto-sorting imports)..."
+if isort --profile black $STAGED_FILES 2>&1; then
+    echo "   ✅ isort: Imports sorted"
+    FILES_MODIFIED=1
+else
+    echo "   ❌ isort: Failed to sort imports"
+    FAILED=1
+fi
+
+# Re-add modified files to staging area
+if [ $FILES_MODIFIED -eq 1 ]; then
+    echo ""
+    echo "📦 Re-staging auto-formatted files..."
+    git add $STAGED_FILES
+fi
+
+# 3. Flake8 - Style Checker (CHECK ONLY)
+echo ""
+echo "3️⃣  Running flake8 (style checking)..."
+if flake8 --max-line-length=100 $STAGED_FILES 2>&1; then
+    echo "   ✅ flake8: No style issues"
+else
+    echo "   ❌ flake8: Style issues found (fix manually)"
+    echo "   💡 Most issues should be auto-fixed by Black/isort"
+    FAILED=1
+fi
+
+# 4. MyPy - Type Checking (only warnings, not blocking)
+echo ""
+echo "4️⃣  Running mypy (type checking)..."
+if mypy --ignore-missing-imports --no-strict-optional $STAGED_FILES 2>&1; then
+    echo "   ✅ mypy: No type errors"
+else
+    echo "   ⚠️  mypy: Type issues found (non-blocking)"
+    # Don't fail on mypy errors for data science projects
+fi
+
+echo ""
+if [ $FAILED -eq 1 ]; then
+    echo "❌ Pre-commit checks FAILED"
+    echo ""
+    echo "⚠️  Black and isort have auto-fixed formatting issues."
+    echo "    However, there are remaining issues that need manual fixes."
+    echo ""
+    exit 1
+else
+    if [ $FILES_MODIFIED -eq 1 ]; then
+        echo "✅ All pre-commit checks passed! (Files auto-formatted)"
+    else
+        echo "✅ All pre-commit checks passed!"
+    fi
+    exit 0
+fi

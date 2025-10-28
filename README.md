@@ -237,6 +237,12 @@ Our next steps will focus on **model tuning and optimization** to further improv
    pip install -r requirements.txt
    ```
 
+4. **Install Git hooks (optional, but recommended)**
+   ```bash
+   bash hooks/install.sh
+   ```
+   This installs a pre-commit hook that auto-formats code with Black/isort.
+
 ---
 
 ## Quick Start
