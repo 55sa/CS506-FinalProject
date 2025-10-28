@@ -27,9 +27,7 @@ def load_single_year(filepath: Path) -> pd.DataFrame:
         raise
 
 
-def load_all_years(
-    data_dir: Path, years: Optional[list[int]] = None
-) -> pd.DataFrame:
+def load_all_years(data_dir: Path, years: Optional[list[int]] = None) -> pd.DataFrame:
     """
     Load and merge multiple years of 311 data.
 
@@ -48,9 +46,7 @@ def load_all_years(
 
     # Get CSV files to load
     if years:
-        csv_files = [
-            data_dir / f"311_requests_{year}.csv" for year in years
-        ]
+        csv_files = [data_dir / f"311_requests_{year}.csv" for year in years]
         csv_files = [f for f in csv_files if f.exists()]
     else:
         csv_files = sorted(data_dir.glob("*.csv"))
@@ -81,9 +77,7 @@ def load_all_years(
     return combined_df
 
 
-def load_data(
-    data_dir: str = "data/raw", years: Optional[list[int]] = None
-) -> pd.DataFrame:
+def load_data(data_dir: str = "data/raw", years: Optional[list[int]] = None) -> pd.DataFrame:
     """
     Load 311 service request data from CSV files.
 

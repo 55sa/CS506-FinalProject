@@ -19,7 +19,7 @@ def train_lightgbm(
     learning_rate: float = 0.1,
     max_depth: int = -1,
     random_state: int = 42,
-    use_gpu: bool = False
+    use_gpu: bool = False,
 ) -> LGBMRegressor:
     """Train LightGBM regression model."""
     device_type = "gpu" if use_gpu else "cpu"
@@ -32,16 +32,12 @@ def train_lightgbm(
         "max_depth": max_depth,
         "random_state": random_state,
         "n_jobs": -1,
-        "verbose": -1
+        "verbose": -1,
     }
 
     # Add GPU parameters if enabled
     if use_gpu:
-        params.update({
-            "device": "gpu",
-            "gpu_platform_id": 0,
-            "gpu_device_id": 0
-        })
+        params.update({"device": "gpu", "gpu_platform_id": 0, "gpu_device_id": 0})
 
     model = LGBMRegressor(**params)
     model.fit(X_train, y_train)
@@ -51,9 +47,7 @@ def train_lightgbm(
 
 
 def evaluate_lightgbm(
-    model: LGBMRegressor,
-    X_test: pd.DataFrame,
-    y_test: pd.Series
+    model: LGBMRegressor, X_test: pd.DataFrame, y_test: pd.Series
 ) -> Tuple[float, float, pd.Series]:
     """Evaluate LightGBM model and return MAE, R², and predictions."""
     logger.info("Evaluating LightGBM model")
@@ -70,17 +64,16 @@ def evaluate_lightgbm(
 
 
 def get_lightgbm_feature_importance(
-    model: LGBMRegressor,
-    feature_names: list,
-    top_n: int = 15
+    model: LGBMRegressor, feature_names: list, top_n: int = 15
 ) -> pd.DataFrame:
     """Extract top N feature importances from trained LightGBM model."""
     logger.info(f"Extracting top {top_n} feature importances")
 
-    importance_df = pd.DataFrame({
-        "feature": feature_names,
-        "importance": model.feature_importances_
-    }).sort_values("importance", ascending=False).head(top_n)
+    importance_df = (
+        pd.DataFrame({"feature": feature_names, "importance": model.feature_importances_})
+        .sort_values("importance", ascending=False)
+        .head(top_n)
+    )
 
     logger.info("Top 5 features:")
     for idx, row in importance_df.head(5).iterrows():

@@ -39,15 +39,11 @@ def plot_yearly_requests(yearly: pd.Series, output_dir: Path) -> None:
     plt.xlabel("Year", fontsize=14, fontweight="bold")
     plt.ylabel("Number of Requests", fontsize=14, fontweight="bold")
     plt.grid(True, alpha=0.3)
-    plt.gca().yaxis.set_major_formatter(
-        FuncFormatter(lambda x, p: f"{int(x):,}")
-    )
+    plt.gca().yaxis.set_major_formatter(FuncFormatter(lambda x, p: f"{int(x):,}"))
     for year, count in yearly.items():
         plt.text(year, count, f"{count:,}", ha="center", va="bottom", fontsize=9)
     plt.tight_layout()
-    plt.savefig(
-        output_dir / "1_requests_per_year.png", dpi=FIGURE_DPI, bbox_inches="tight"
-    )
+    plt.savefig(output_dir / "1_requests_per_year.png", dpi=FIGURE_DPI, bbox_inches="tight")
     logger.info("✓ Saved: 1_requests_per_year.png")
     plt.close()
 
@@ -59,12 +55,8 @@ def plot_top_request_types(top_types: pd.Series, output_dir: Path) -> None:
     plt.barh(range(len(top_types)), top_types.values, color=colors)
     plt.yticks(range(len(top_types)), top_types.index, fontsize=11)
     plt.xlabel("Number of Requests", fontsize=14, fontweight="bold")
-    plt.title(
-        "Top 20 Request Types (Overall)", fontsize=18, fontweight="bold", pad=20
-    )
-    plt.gca().xaxis.set_major_formatter(
-        FuncFormatter(lambda x, p: f"{int(x):,}")
-    )
+    plt.title("Top 20 Request Types (Overall)", fontsize=18, fontweight="bold", pad=20)
+    plt.gca().xaxis.set_major_formatter(FuncFormatter(lambda x, p: f"{int(x):,}"))
     plt.gca().invert_yaxis()
     plt.grid(True, alpha=0.3, axis="x")
     plt.tight_layout()
@@ -95,9 +87,7 @@ def plot_request_types_by_neighborhood(
         axes[idx].set_yticks(range(len(types)))
         axes[idx].set_yticklabels(types.index, fontsize=9)
         axes[idx].set_xlabel("Count", fontsize=11)
-        axes[idx].set_title(
-            f"{hood} (n={types.sum():,})", fontsize=12, fontweight="bold"
-        )
+        axes[idx].set_title(f"{hood} (n={types.sum():,})", fontsize=12, fontweight="bold")
         axes[idx].invert_yaxis()
         axes[idx].grid(True, alpha=0.3, axis="x")
 
@@ -118,9 +108,7 @@ def plot_request_types_by_neighborhood(
     plt.close()
 
 
-def plot_trends_by_subject(
-    subject_trends: pd.DataFrame, output_dir: Path
-) -> None:
+def plot_trends_by_subject(subject_trends: pd.DataFrame, output_dir: Path) -> None:
     """Plot subject (department) request trends over time."""
     plt.figure(figsize=(16, 8))
     for subject in subject_trends.columns:
@@ -142,20 +130,14 @@ def plot_trends_by_subject(
     plt.ylabel("Number of Requests", fontsize=14, fontweight="bold")
     plt.legend(title="Subject", fontsize=11, title_fontsize=12, loc="best")
     plt.grid(True, alpha=0.3)
-    plt.gca().yaxis.set_major_formatter(
-        FuncFormatter(lambda x, p: f"{int(x):,}")
-    )
+    plt.gca().yaxis.set_major_formatter(FuncFormatter(lambda x, p: f"{int(x):,}"))
     plt.tight_layout()
-    plt.savefig(
-        output_dir / "4_trends_by_subject.png", dpi=FIGURE_DPI, bbox_inches="tight"
-    )
+    plt.savefig(output_dir / "4_trends_by_subject.png", dpi=FIGURE_DPI, bbox_inches="tight")
     logger.info("✓ Saved: 4_trends_by_subject.png")
     plt.close()
 
 
-def plot_trends_by_reason(
-    reason_trends: pd.DataFrame, output_dir: Path
-) -> None:
+def plot_trends_by_reason(reason_trends: pd.DataFrame, output_dir: Path) -> None:
     """Plot reason request trends over time."""
     plt.figure(figsize=(16, 9))
     for reason in reason_trends.columns:
@@ -176,17 +158,11 @@ def plot_trends_by_reason(
     )
     plt.xlabel("Year", fontsize=14, fontweight="bold")
     plt.ylabel("Number of Requests", fontsize=14, fontweight="bold")
-    plt.legend(
-        title="Reason", fontsize=10, title_fontsize=12, loc="best", ncol=2
-    )
+    plt.legend(title="Reason", fontsize=10, title_fontsize=12, loc="best", ncol=2)
     plt.grid(True, alpha=0.3)
-    plt.gca().yaxis.set_major_formatter(
-        FuncFormatter(lambda x, p: f"{int(x):,}")
-    )
+    plt.gca().yaxis.set_major_formatter(FuncFormatter(lambda x, p: f"{int(x):,}"))
     plt.tight_layout()
-    plt.savefig(
-        output_dir / "5_trends_by_reason.png", dpi=FIGURE_DPI, bbox_inches="tight"
-    )
+    plt.savefig(output_dir / "5_trends_by_reason.png", dpi=FIGURE_DPI, bbox_inches="tight")
     logger.info("✓ Saved: 5_trends_by_reason.png")
     plt.close()
 
@@ -214,25 +190,17 @@ def plot_trends_by_queue(queue_trends: pd.DataFrame, output_dir: Path) -> None:
     plt.ylabel("Number of Requests", fontsize=14, fontweight="bold")
     plt.legend(title="Queue", fontsize=10, title_fontsize=12, loc="best", ncol=2)
     plt.grid(True, alpha=0.3)
-    plt.gca().yaxis.set_major_formatter(
-        FuncFormatter(lambda x, p: f"{int(x):,}")
-    )
+    plt.gca().yaxis.set_major_formatter(FuncFormatter(lambda x, p: f"{int(x):,}"))
     plt.tight_layout()
-    plt.savefig(
-        output_dir / "6_trends_by_queue.png", dpi=FIGURE_DPI, bbox_inches="tight"
-    )
+    plt.savefig(output_dir / "6_trends_by_queue.png", dpi=FIGURE_DPI, bbox_inches="tight")
     logger.info("✓ Saved: 6_trends_by_queue.png")
     plt.close()
 
 
-def plot_volume_by_source(
-    source_yearly: pd.DataFrame, output_dir: Path
-) -> None:
+def plot_volume_by_source(source_yearly: pd.DataFrame, output_dir: Path) -> None:
     """Plot submission channel volume by year."""
     plt.figure(figsize=(16, 8))
-    source_yearly.plot(
-        kind="bar", stacked=False, ax=plt.gca(), colormap="tab10", width=0.8
-    )
+    source_yearly.plot(kind="bar", stacked=False, ax=plt.gca(), colormap="tab10", width=0.8)
     plt.title(
         "Request Volume by Submission Channel (SOURCE) - Year over Year",
         fontsize=18,
@@ -244,13 +212,9 @@ def plot_volume_by_source(
     plt.legend(title="Source", fontsize=11, title_fontsize=12, loc="best")
     plt.xticks(rotation=0)
     plt.grid(True, alpha=0.3, axis="y")
-    plt.gca().yaxis.set_major_formatter(
-        FuncFormatter(lambda x, p: f"{int(x):,}")
-    )
+    plt.gca().yaxis.set_major_formatter(FuncFormatter(lambda x, p: f"{int(x):,}"))
     plt.tight_layout()
-    plt.savefig(
-        output_dir / "7_volume_by_source.png", dpi=FIGURE_DPI, bbox_inches="tight"
-    )
+    plt.savefig(output_dir / "7_volume_by_source.png", dpi=FIGURE_DPI, bbox_inches="tight")
     logger.info("✓ Saved: 7_volume_by_source.png")
     plt.close()
 
@@ -274,9 +238,7 @@ def plot_avg_daily_contacts(daily_avg: pd.DataFrame, output_dir: Path) -> None:
     plt.xlabel("Year", fontsize=14, fontweight="bold")
     plt.ylabel("Average Daily Requests", fontsize=14, fontweight="bold")
     plt.grid(True, alpha=0.3, axis="y")
-    plt.gca().yaxis.set_major_formatter(
-        FuncFormatter(lambda x, p: f"{int(x):,}")
-    )
+    plt.gca().yaxis.set_major_formatter(FuncFormatter(lambda x, p: f"{int(x):,}"))
     for _, row in daily_avg.iterrows():
         plt.text(
             row["year"],
@@ -297,9 +259,7 @@ def plot_avg_daily_contacts(daily_avg: pd.DataFrame, output_dir: Path) -> None:
     plt.close()
 
 
-def plot_top5_types_volume(
-    top5_yearly: pd.DataFrame, output_dir: Path
-) -> None:
+def plot_top5_types_volume(top5_yearly: pd.DataFrame, output_dir: Path) -> None:
     """Plot top 5 request types volume over time."""
     plt.figure(figsize=(16, 8))
     top5_yearly.plot(
@@ -319,9 +279,7 @@ def plot_top5_types_volume(
     plt.legend(title="Type", fontsize=11, title_fontsize=12, loc="best")
     plt.xticks(rotation=0)
     plt.grid(True, alpha=0.3, axis="y")
-    plt.gca().yaxis.set_major_formatter(
-        FuncFormatter(lambda x, p: f"{int(x):,}")
-    )
+    plt.gca().yaxis.set_major_formatter(FuncFormatter(lambda x, p: f"{int(x):,}"))
     plt.tight_layout()
     plt.savefig(
         output_dir / "9_top5_types_volume.png",
@@ -332,9 +290,7 @@ def plot_top5_types_volume(
     plt.close()
 
 
-def plot_resolution_by_queue(
-    queue_resolution: pd.DataFrame, output_dir: Path
-) -> None:
+def plot_resolution_by_queue(queue_resolution: pd.DataFrame, output_dir: Path) -> None:
     """Plot average resolution time by queue."""
     plt.figure(figsize=(14, 10))
     y_pos = np.arange(len(queue_resolution))
@@ -371,9 +327,7 @@ def plot_resolution_by_queue(
     plt.close()
 
 
-def plot_resolution_heatmap(
-    heatmap_data: pd.DataFrame, output_dir: Path
-) -> None:
+def plot_resolution_heatmap(heatmap_data: pd.DataFrame, output_dir: Path) -> None:
     """Plot resolution time heatmap (queue × neighborhood)."""
     plt.figure(figsize=(16, 10))
     sns.heatmap(
@@ -404,9 +358,7 @@ def plot_resolution_heatmap(
     plt.close()
 
 
-def plot_case_status_breakdown(
-    status_data: pd.DataFrame, output_dir: Path
-) -> None:
+def plot_case_status_breakdown(status_data: pd.DataFrame, output_dir: Path) -> None:
     """Plot case status breakdown (pie + bar chart)."""
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 7))
 
@@ -466,9 +418,7 @@ def plot_top_neighborhoods(top_hoods: pd.Series, output_dir: Path) -> None:
         fontweight="bold",
         pad=20,
     )
-    plt.gca().xaxis.set_major_formatter(
-        FuncFormatter(lambda x, p: f"{int(x):,}")
-    )
+    plt.gca().xaxis.set_major_formatter(FuncFormatter(lambda x, p: f"{int(x):,}"))
     plt.gca().invert_yaxis()
     plt.grid(True, alpha=0.3, axis="x")
     plt.tight_layout()
@@ -481,9 +431,7 @@ def plot_top_neighborhoods(top_hoods: pd.Series, output_dir: Path) -> None:
     plt.close()
 
 
-def plot_resolution_distribution(
-    box_data: pd.DataFrame, output_dir: Path
-) -> None:
+def plot_resolution_distribution(box_data: pd.DataFrame, output_dir: Path) -> None:
     """Plot resolution time distribution as box plots."""
     plt.figure(figsize=(16, 8))
     sns.boxplot(
@@ -515,19 +463,13 @@ def plot_resolution_distribution(
     plt.close()
 
 
-def plot_status_yearly_trends(
-    status_yearly: pd.DataFrame, output_dir: Path
-) -> None:
+def plot_status_yearly_trends(status_yearly: pd.DataFrame, output_dir: Path) -> None:
     """Plot year-over-year case status trends."""
-    status_yearly_pct = (
-        status_yearly.div(status_yearly.sum(axis=1), axis=0) * 100
-    )
+    status_yearly_pct = status_yearly.div(status_yearly.sum(axis=1), axis=0) * 100
 
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(16, 12))
 
-    status_yearly.plot(
-        kind="bar", stacked=True, ax=ax1, color=["#66C2A5", "#FC8D62"], width=0.8
-    )
+    status_yearly.plot(kind="bar", stacked=True, ax=ax1, color=["#66C2A5", "#FC8D62"], width=0.8)
     ax1.set_title(
         "Case Status by Year (Absolute Counts)",
         fontsize=16,

@@ -17,7 +17,7 @@ def train_random_forest(
     y_train: pd.Series,
     n_estimators: int = 100,
     max_depth: int | None = None,
-    random_state: int = 42
+    random_state: int = 42,
 ) -> RandomForestRegressor:
     """Train Random Forest regression model."""
     logger.info(f"Training Random Forest model with {n_estimators} trees")
@@ -27,7 +27,7 @@ def train_random_forest(
         max_depth=max_depth,
         random_state=random_state,
         n_jobs=-1,
-        verbose=0
+        verbose=0,
     )
 
     model.fit(X_train, y_train)
@@ -37,9 +37,7 @@ def train_random_forest(
 
 
 def evaluate_random_forest(
-    model: RandomForestRegressor,
-    X_test: pd.DataFrame,
-    y_test: pd.Series
+    model: RandomForestRegressor, X_test: pd.DataFrame, y_test: pd.Series
 ) -> Tuple[float, float, pd.Series]:
     """Evaluate Random Forest model and return MAE, R², and predictions."""
     logger.info("Evaluating Random Forest model")
@@ -56,17 +54,16 @@ def evaluate_random_forest(
 
 
 def get_feature_importance(
-    model: RandomForestRegressor,
-    feature_names: list,
-    top_n: int = 15
+    model: RandomForestRegressor, feature_names: list, top_n: int = 15
 ) -> pd.DataFrame:
     """Extract top N feature importances from trained model."""
     logger.info(f"Extracting top {top_n} feature importances")
 
-    importance_df = pd.DataFrame({
-        "feature": feature_names,
-        "importance": model.feature_importances_
-    }).sort_values("importance", ascending=False).head(top_n)
+    importance_df = (
+        pd.DataFrame({"feature": feature_names, "importance": model.feature_importances_})
+        .sort_values("importance", ascending=False)
+        .head(top_n)
+    )
 
     logger.info("Top 5 features:")
     for idx, row in importance_df.head(5).iterrows():
