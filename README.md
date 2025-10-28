@@ -1,25 +1,155 @@
-# Boston 311 Service Request Analysis Project
+# Boston 311 Service Request Analysis — Midterm Report
 
 **Team Members:** Jiahao He, Thong Dao, Sundeep Routhu, Yijia Chen, Julyssa Michelle Villa Machado
-
-**Current Phase:** Core Analytics Goals (exploratory data analysis and visualization)
-
-> 🚀 **Quick Start:** See [GETTING_STARTED.md](GETTING_STARTED.md) for a 5-minute setup guide!
+**Course:** CS506 — Data Science Project
+**Current Phase:** Midterm Report (Exploratory Data Analysis & Preliminary Modeling)
 
 ---
 
-## Project Description
+## 1. Project Overview
 
-The goal of this project is to create a historical database of 311 service requests recorded by the City of Boston from 2011 to 2025. Using this database, we aim to analyze trends and patterns in service requests, identify operational insights, and provide recommendations for improving city responsiveness.
+The goal of this project is to build a comprehensive **historical database of 311 service requests** for the City of Boston from **2011 to 2025**, analyze temporal and spatial trends, and create predictive models to improve city service responsiveness.
 
-This project analyzes approximately 5 million 311 service request records to understand request volume trends, common request types by neighborhood, response time patterns, and seasonal/temporal patterns.
-
-More details can be found in the [Spark Project document](https://docs.google.com/document/d/1-a7IIj5K5v1mcdvi0_cUSYJpfFmZ9QJmsYikYGl3bJ4/edit?tab=t.0).
+At this midterm stage, our team has:
+- Collected and cleaned **15 years (2011–2025)** of data (~5 million records)
+- Built a **data pipeline** for preprocessing and visualization
+- Generated **15 core analytics visualizations**
+- Implemented **baseline machine learning models**
+- Obtained **promising preliminary results** on resolution time prediction
 
 ---
 
-## Project Structure
+## 2. Data Processing Summary
 
+### 2.1 Data Source
+All 311 service request data were automatically downloaded from the [Boston Open Data Portal](https://data.boston.gov/dataset/311-service-requests) using our custom script `download_data.py`.
+The script employs **robust retry logic (`requests` + `urllib3.Retry`)** to handle network interruptions, automatically skips existing files, and logs progress for each year (2011–2025).
+Each yearly file (e.g., `311_requests_2020.csv`) is stored under `data/raw/`, totaling more than **2 GB of raw data**.
+
+The dataset includes detailed request information such as:
+- `OPEN_DT`, `CLOSED_DT`, `CASE_STATUS`
+- Request category (`TYPE`, `REASON`, `QUEUE`, `SUBJECT`)
+- `LOCATION` and `NEIGHBORHOOD`
+- Submission `SOURCE` (phone, web, app)
+
+### 2.2 Preprocessing Steps (`src/data/preprocessor.py`)
+| Step | Description |
+|------|--------------|
+| **Data Integration** | Merged 15 yearly CSV files (2011–2025) into one unified dataframe (~3.2M rows after cleaning). |
+| **Datetime Cleaning** | Converted `OPEN_DT` and `CLOSED_DT` columns to datetime, coercing invalid timestamps to `NaT`. |
+| **Record Validation** | Dropped rows missing `OPEN_DT` and removed duplicate `CASE_ENQUIRY_ID`s to ensure data uniqueness. |
+| **Column Normalization** | Stripped whitespace, standardized text case, and replaced `"NaN"` / `"None"` / empty strings with proper null values. |
+| **Feature Engineering** | Derived multiple temporal features: `year`, `month`, `day_of_week`, `hour`, `day_of_month`, `season`, `is_weekend`, and `is_holiday` (using the `holidays` library). |
+| **Resolution Time Calculation** | Computed both `resolution_hours` and `resolution_time_days` for closed requests. |
+| **Outlier Filtering** | Excluded extreme values (`resolution_time_days > 365`). |
+| **Data Quality Validation** | Generated summary statistics on duplicates, missing fields, and case status proportions. |
+| **Encoding** | Applied consistent label encoding for categorical variables (`TYPE`, `QUEUE`, `REASON`, `NEIGHBORHOOD`, etc.). |
+| **Export** | Final cleaned dataset saved as `data/processed/311_cleaned.csv` for downstream modeling. |
+
+---
+
+## 3. Preliminary Data Visualizations
+
+We implemented `src/core_analysis.py` to generate all **15 core analytical visualizations**, corresponding to the analytical goals defined in our project plan.
+
+| # | Visualization | Key Findings                                                                                                                                           |
+|--:|----------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1 | Total requests per year (2011–2025) | Requests have steadily increased, peaking in 2024.                                                                                                     |
+| 2 | Top 20 request types overall | "Parking Enforcement" is the most frequent type of request.                                                                                            |
+| 3 | Top request types by neighborhood | Dorchester and South Boston consistently have the most requests, with Parking Enforcement recurring as the top issue.                                  |
+| 4 | Trends by SUBJECT | Vast majority of requests are received by the Public Works Department.                                                                                 |
+| 5 | Trends by REASON | Most requests concern enforcement & abandoned vehicles and street cleaning after 2016.                                                                 |
+| 6 | Trends by QUEUE | BTDT_Parking Enforcement is the queue that expands the fastest and generally receives the most requests after 2016.                                    |
+| 7 | Request volume by SOURCE | Use of the Citizens Connect App surged after 2015, but interestingly, most requests in 2025 are employee generated.                                    |
+| 8 | Average daily contacts per year | Daily requests have nearly doubled since 2013.                                                                                                         |
+| 9 | Top 5 request types over time | Parking enforcement is consistently the vast majority of cases in recent years.                                                                        |
+| 10 | Average resolution time by QUEUE | Average resolution varies widely; infrastructure repairs take the longest (>140 days).                                                                 |
+| 11 | Resolution time heatmap (QUEUE × Neighborhood) | Resolution time is longest in Hyde Park, East Boston, and Dorchester, especially for ISD_Building and Tree Maintenance queues.                         |
+| 12 | Case status breakdown (Closed/Open/Null) | 90.95% closed, 9.05% open.                                                                                                                             |
+| 13 | Top 20 neighborhoods by request volume | Dorchester has the highest request density by far.                                                                                                     |
+| 14 | Resolution time distribution | Insight into common requests: new tree requests and long-term street light repair take the longest by far, while snow reports are cleared the fastest. |
+| 15 | Status trends year-over-year | Overall closure rate stable despite request volume growth.                                                                                             |
+
+**Runtime:** ~2–3 minutes for full dataset
+**Output Directory:** `outputs/figures/` (15 PNGs)
+
+---
+
+## 4. Data Modeling
+
+### 4.1 Objective
+Our first modeling goal is to **predict service resolution time (in days)** using request-level attributes such as type, location, and submission channel.
+
+---
+
+### 4.2 Feature Preparation (`feature_prep.py`)
+
+- **Temporal features:** `year`, `month`, `day_of_week_num`, `hour`, `day_of_month`, `is_weekend`, `is_holiday`
+- **Categorical features:** `subject`, `department`, `reason`, `type`, `queue`, `neighborhood`, `source`, `closure_reason`, `location_zipcode`, `fire_district`, `pwd_district`, `police_district`, `city_council_district`, `season`
+- **Target variable:** `resolution_time_days` (only non-null and ≥ 0 values kept)
+- **Encoding & Cleaning:**
+  - Missing categories replaced with `"Unknown"`
+  - Label-encoded all categorical columns
+  - Numeric columns imputed using the **median**
+- **Split:** 80 % training / 20 % testing (`random_state = 42`)
+
+---
+
+### 4.3 Models Implemented
+
+| Model | File | Description |
+|--------|------|-------------|
+| **Linear Regression** | `baseline.py` | Ordinary Least Squares regression; outputs **MAE** and **R²**. |
+| **Random Forest Regressor** | `random_forest.py` | Ensemble of decision trees (`n_estimators`, `max_depth`) capturing non-linear patterns. |
+| **XGBoost Regressor** | `xgboost_model.py` | Gradient-boosted trees (`tree_method='hist'`, `learning_rate`, `max_depth`, `n_estimators`); **GPU-optional** (`device='cuda:0'`). |
+| **LightGBM Regressor** | `lightgbm_model.py` | Fast gradient boosting (`learning_rate`, `max_depth`, `n_estimators`); **GPU-optional** (`device='gpu'`). |
+
+
+---
+
+### 4.4 Evaluation Metrics
+
+- **Metrics:** Mean Absolute Error (**MAE**) and Coefficient of Determination (**R²**)
+- **Validation Strategy:** 80 % train / 20 % test random split
+
+---
+
+## 5. Preliminary Results
+
+| Model | MAE (days) | R² | Notes |
+|-------|------------|----|-------|
+| Linear Regression | 47.64 | 0.0315 | Baseline model; poor fit, underestimates long cases |
+| Random Forest | **6.78** | **0.9504** | Best overall performance; captures non-linear patterns extremely well |
+| XGBoost | 15.38 | 0.9007 | Strong performance; slightly underfits long-tail cases |
+| LightGBM | 15.49 | 0.9017 | Excellent trade-off between accuracy and speed |
+
+**Model Comparison Plots:**
+- `model_comparison.png` — Side-by-side MAE and R² comparison
+- `predicted_vs_actual_*.png` — Scatter plots of predicted vs actual resolution time for each model
+
+**Feature Importances:**
+- `feature_importance_xgb.png` — XGBoost top features
+- `feature_importance_rf.png` — Random Forest top features
+- `feature_importance_lgbm.png` — LightGBM top features
+
+**Top Predictive Features (across all models):**
+1. `year`
+2. `closure_reason_encoded`
+3. `reason_encoded`
+4. `queue_encoded`
+5. `type_encoded`
+
+**Observations:**
+- Random Forest achieved the highest R² (0.9504) and lowest MAE (6.78 days), indicating strong ability to capture complex interactions.
+- XGBoost and LightGBM show excellent accuracy (R² > 0.90) while being computationally efficient.
+- `year`, `closure_reason_encoded`, `reason_encoded`, and `queue_encoded` consistently appear as dominant predictors across all models.
+- Linear Regression fails to capture non-linear effects, confirming the need for ensemble tree methods.
+- Fine-tuning **learning rate** and **tree depth** for XGBoost/LightGBM is expected to further improve performance.
+
+
+---
+
+## 6. Project Structure
 ```
 .
 ├── data/
@@ -28,6 +158,7 @@ More details can be found in the [Spark Project document](https://docs.google.co
 ├── notebooks/            # Exploratory analysis (Jupyter)
 ├── src/
 │   ├── core_analysis.py  # Main script: generates all 15 visualizations
+│   ├── predict_resolution_time.py  # ML prediction pipeline
 │   ├── data/
 │   │   ├── loader.py     # Load and merge yearly CSV files
 │   │   └── preprocessor.py # Clean and derive features
@@ -35,25 +166,49 @@ More details can be found in the [Spark Project document](https://docs.google.co
 │   │   ├── temporal.py   # Year-over-year trends, daily averages
 │   │   ├── categorical.py # Request types by neighborhood, dept
 │   │   └── resolution.py  # Resolution time calculations
+│   ├── models/
+│   │   ├── baseline.py   # Linear regression
+│   │   ├── random_forest.py  # Random Forest model
+│   │   ├── xgboost_model.py  # XGBoost model
+│   │   ├── lightgbm_model.py # LightGBM model
+│   │   └── feature_prep.py   # Feature engineering
 │   └── visualization/
 │       ├── maps.py       # Choropleth and heatmaps
 │       ├── temporal.py   # Time series plots
-│       └── comparative.py # Bar charts, scatter plots
+│       ├── comparative.py # Bar charts, scatter plots
+│       └── model_plots.py # ML evaluation plots
 ├── outputs/
 │   ├── figures/          # Generated PNG charts (15 files)
 │   └── reports/          # Analysis summaries
 ├── download_data.py      # Automated data download script
-├── claude.md             # Project instructions and guidelines
 ├── requirements.txt      # Python dependencies
 └── README.md             # This file
 ```
 
+
+
+## 7. Future Plan
+
+Our next steps will focus on **model tuning and optimization** to further improve predictive accuracy:
+
+- **Hyperparameter Tuning for XGBoost and LightGBM:**
+  We plan to systematically tune key hyperparameters — especially the **learning rate**, along with `max_depth`, `n_estimators`, `subsample`, and `colsample_bytree` — using **Grid Search** and **Bayesian Optimization**.
+  Adjusting the learning rate will allow the models to converge more smoothly and avoid overfitting, potentially improving MAE and R² scores.
+
+- **Feature Engineering Enhancements:**
+  Add more temporal and spatial interaction features (e.g., `month × neighborhood`, holiday indicators, weather conditions) to capture contextual effects on resolution time.
+
+- **Model Comparison and Ensemble Methods:**
+  Combine XGBoost and LightGBM predictions using simple averaging or stacking to test for further gains.
+
+
 ---
 
-## Setup Instructions
+# Usage & Troubleshooting
+
+## Setup
 
 ### Prerequisites
-
 - Python 3.10 or higher
 - pip package manager
 - (Optional) Virtual environment tool (venv, conda, etc.)
@@ -82,298 +237,136 @@ More details can be found in the [Spark Project document](https://docs.google.co
    pip install -r requirements.txt
    ```
 
-### Data Download
+---
 
-**Option 1: Automated Download (Recommended)**
+## Quick Start
 
-Run the included download script to automatically download all data files:
-
+### 1. Download Data
 ```bash
 python download_data.py
 ```
+Downloads ~1.8 GB to `data/raw/` (~5-10 min)
 
-This will download all 15 years (2011-2025) of data (~1.8 GB total) to `data/raw/`.
-
-**Option 2: Manual Download**
-
-1. Visit: https://data.boston.gov/dataset/311-service-requests
-2. Download CSV files for years 2011-2025
-3. Place the files in the `data/raw/` directory
-
-Expected file naming convention:
-- `311_requests_2011.csv`
-- `311_requests_2012.csv`
-- ... etc.
-
-**Data Size:** Approximately 1.8 GB total (8.5 million records)
-
----
-
-## Usage
-
-### Quick Start: Generate All Core Analytics Visualizations
-
-To generate all 15 comprehensive visualizations covering the core analytics goals:
-
+### 2. Core Analytics
 ```bash
-python src/core_analysis.py
+python -m src.core_analysis
+```
+Generates 15 visualizations → `outputs/figures/` (~2-3 min)
+
+### 3. Resolution Time Prediction
+```bash
+python -m src.predict_resolution_time
+```
+Trains 4 ML models and generates plots → `outputs/figures/resolution_time/` (~2-3 min)
+
+**Optional:** Adjust Random Forest sampling and enable GPU:
+```bash
+python -m src.predict_resolution_time --sample 0.1  # 10% (default, fast)
+python -m src.predict_resolution_time --sample 1.0  # 100% (slower, more accurate)
+python -m src.predict_resolution_time --gpu         # Enable GPU for LightGBM/XGBoost
 ```
 
-This script will:
-- Load all data from 2011-2025 (3.2M+ records)
-- Preprocess and clean the data
-- Generate 15 publication-quality visualizations saved to `outputs/figures/`
-- Display comprehensive summary statistics
+---
 
-**Output:** 15 PNG files covering:
-1. Total requests per year (2011-2025)
-2. Top 20 request types overall
-3. Request types by top 5 neighborhoods
-4. Trends by SUBJECT (department) year-over-year
-5. Trends by REASON year-over-year
-6. Trends by QUEUE year-over-year
-7. Volume by submission channel (SOURCE)
-8. Average daily contacts by year
-9. Top 5 request types volume trends
-10. Average resolution time by QUEUE
-11. Resolution time heatmap (QUEUE × Neighborhood)
-12. Case status breakdown (pie + bar charts)
-13. Top 20 neighborhoods by volume
-14. Resolution time distribution (box plots)
-15. Year-over-year status trends
+## Output Files
 
-**Runtime:** ~2-3 minutes for full dataset
+```
+outputs/figures/
+├── 1_requests_per_year.png               # Core analytics (15 files)
+├── 2_top_request_types_overall.png
+├── ...
+├── 15_status_yearly_trends.png
+└── resolution_time/                      # ML predictions (8 files)
+    ├── feature_importance_rf.png
+    ├── feature_importance_lgbm.png
+    ├── feature_importance_xgb.png
+    ├── predicted_vs_actual_lr.png
+    ├── predicted_vs_actual_rf.png
+    ├── predicted_vs_actual_lgbm.png
+    ├── predicted_vs_actual_xgb.png
+    └── model_comparison.png
+```
 
 ---
 
-### Basic Data Pipeline
+## Troubleshooting
 
-1. **Load and preprocess data**
-   ```python
-   from src.data.loader import load_data
-   from src.data.preprocessor import preprocess_data
+**"No data loaded"**
+```bash
+python download_data.py  # Download data first
+```
 
-   # Load raw data
-   raw_df = load_data()
+**Import errors**
+```bash
+# Run from project root
+cd /path/to/CS506-FinalProject
+python -m src.core_analysis
+```
 
-   # Preprocess (clean, derive features)
-   clean_df = preprocess_data(raw_df)
-   ```
+**Out of memory**
+```python
+# Load fewer years
+df = load_data(years=[2022, 2023, 2024])
+```
 
-2. **Run temporal analysis**
-   ```python
-   from src.analysis.temporal import calculate_requests_per_year
+---
 
-   yearly_counts = calculate_requests_per_year(clean_df)
-   print(yearly_counts)
-   ```
-
-3. **Create visualizations**
-   ```python
-   from src.visualization.temporal import plot_requests_per_year
-
-   plot_requests_per_year(yearly_counts, output_path='outputs/figures/yearly_requests.png')
-   ```
+## Advanced Usage
 
 ### Running Individual Modules
 
-You can run individual modules directly for specific tasks:
-
 ```bash
 # Preprocess all data (saves to data/processed/311_cleaned.csv)
-python src/data/preprocessor.py
-
-# Run comprehensive core analysis (generates all visualizations)
-python src/core_analysis.py
+python -m src.data.preprocessor
 
 # Run temporal analysis
-python src/analysis/temporal.py
+python -m src.analysis.temporal
 
-# Generate all temporal visualizations
-python src/visualization/temporal.py
-
-# Generate comparative visualizations
-python src/visualization/comparative.py
-
-# Generate geographic visualizations (requires location data)
-python src/visualization/maps.py
+# Generate specific visualizations
+python -m src.visualization.temporal
+python -m src.visualization.comparative
+python -m src.visualization.maps
 ```
 
 ### Using Jupyter Notebooks
 
-For exploratory analysis, use Jupyter notebooks:
-
+For exploratory analysis:
 ```bash
 jupyter notebook
 ```
+Navigate to the `notebooks/` directory.
 
-Navigate to the `notebooks/` directory and create a new notebook.
+### Python API
 
----
+```python
+from src.data.loader import load_data
+from src.data.preprocessor import preprocess_data
+from src.analysis.temporal import calculate_requests_per_year
+from src.visualization.temporal import plot_requests_per_year
 
-## Quick Reference
+# Load and preprocess
+raw_df = load_data()
+clean_df = preprocess_data(raw_df)
 
-### Common Commands
+# Run analysis
+yearly_counts = calculate_requests_per_year(clean_df)
 
-```bash
-# Download all data files (one-time setup)
-python download_data.py
-
-# Generate all core analytics visualizations
-python src/core_analysis.py
-
-# Preprocess data only (saves to data/processed/)
-python src/data/preprocessor.py
-
-# Start Jupyter for exploratory analysis
-jupyter notebook
+# Create visualization
+plot_requests_per_year(yearly_counts, output_path='outputs/figures/yearly_requests.png')
 ```
 
-### Output Files
-
-After running `python src/core_analysis.py`, you'll find:
-
-- **Visualizations:** `outputs/figures/` (15 PNG files, 300 DPI)
-- **Processed data:** `data/processed/311_cleaned.csv` (auto-generated if needed)
-
-### Key Insights from Core Analysis
-
-Based on 3.2M records (2011-2025):
-- **Peak year:** 2024 (282,836 requests)
-- **Top request type:** Parking Enforcement (14.7% of all requests)
-- **Resolution rate:** 90.95% closed
-- **Average resolution:** 12.1 days (median: 0.6 days)
-- **Busiest neighborhood:** Dorchester (14.3% of requests)
-- **Main submission channel:** Citizens Connect App (38.3%)
-
 ---
 
-## Project Goals
+## Additional Information
 
-### Core Analytical Goals
+### Tech Stack
+- **Language:** Python 3.10+
+- **Data Processing:** pandas, numpy
+- **Visualization:** matplotlib, seaborn, plotly
+- **Geospatial:** geopandas, folium
+- **Machine Learning:** scikit-learn, LightGBM, XGBoost
+- **Environment:** Jupyter notebooks + Python scripts
 
-- Show the total volume of requests per year (how many 311 requests is the city receiving per year)
-- Show which service requests are most common for the city overall AND by NEIGHBORHOOD and how this is changing year over year by SUBJECT (department), REASON, and QUEUE
-- Show case volume changing by submission channel SOURCE
-- Show the average number of daily contacts by year
-- Show volume of top 5 request types (TYPE)
-- Calculate average goal resolution time by QUEUE
-- Calculate average goal resolution time by QUEUE and neighborhood
-- Show the percentage of service requests that are:
-  - Closed (CLOSED_DT or CASE_STATUS = closed)
-  - No data (CASE_STATUS = null)
-  - Unresolved (CASE_STATUS = open)
-
-### Stretch Goals
-
-- Build a linear model to explore relationships between features
-- Identify which requests are most common for census tracts defined as high social vulnerability based on the city's [social vulnerability index](https://data.boston.gov/dataset/climate-ready-boston-social-vulnerability) (note: this will require additional geographic boundary work)
-- Predict the number of service requests in the future (hourly, daily, weekly, holidays, etc.)
-- Predict how long a new request might take to resolve
-
----
-
-## Data Collection
-
-### Data Source
-
-Data for each year can be found on the [Boston gov website](https://data.boston.gov/dataset/311-service-requests), which will be downloaded and merged into one dataframe for exploration and analysis.
-
-### Preprocessing Steps
-
-- Cleaning categorical fields
-- Deriving temporal features
-- Computing resolution times
-
----
-
-## Modeling Approach
-
-### Core Models (Primary Focus)
-
-**1. Resolution Time Prediction (Regression)**
-- **Baseline:** Linear Regression - simple, interpretable, establishes RMSE baseline
-- **Intermediate:** Random Forest - captures non-linear relationships, provides feature importance
-- **Production:** XGBoost/LightGBM - best predictive performance, handles complex feature interactions
-- **Alternative:** Elastic Net Regularized Regression (if high-dimensional data after encoding) (probably wont be needed)
-
-**2. Case Closure Classification**
-- **Baseline:** Logistic Regression
-- **Advanced:** XGBoost - optimized for F1-score on imbalanced classes
-
-**3. Neighborhood Segmentation (Clustering)**
-- **Primary:** K-means clustering or HDBScan on neighborhood request patterns
-
-### Stretch Models
-
-**4. Request Volume Forecasting (Time Series)**
-- **Baseline:** Prophet
-- **Advanced:** LSTM for multi-variate time series (daily/weekly volume predictions)
-
-### Expected Challenges
-- - **Limited features at request open time:** Can only use request characteristics, not case progression data
-- Imbalanced data across neighborhoods -> stratified sampling
-- Missing CLOSED_DT values -> separate classification problem (we will ignore it for now)
-- Skewed resolution time distribution -> log transformation or quantile regression
-- Seasonal patterns -> add season feature
-
-### Feature Extraction
-- **Temporal:** day of week, month, season, is_holiday, time since previous request
-- **Derived:** requests per capita by neighborhood, resolution time minus SLA
-- **Categorical encodings:** one-hot for request type
-
----
-
-## Data Visualization Plan
-
-### Maps / Geospatial
-
-- Choropleth maps showing per-capita 311 usage, median resolution time, and unresolved rates by neighborhood
-- Heatmaps of request concentration and hotspots
-- Interactive map filters for request type, neighborhood, and date range (stretch)
-
-### Temporal Analysis
-
-- Time series of request counts, SLA compliance rates, and median resolution time by day/week
-
-### Categorical / Comparative Analysis
-
-- Stacked or clustered bar charts for request types by neighborhood
-- Scatter plots for per-capita unresolved rates with regression lines
-- Side-by-side fairness dashboards comparing neighborhoods or demographic groups on key metrics
-
-### Delivery Formats
-
-- Static figures for reports (PNG/PDF)
-- Interactive dashboard (stretch)
-
----
-
-## Test Plan
-- **Resolution Time Prediction:** Can we predict how long a request will take to resolve?
-- **Case Closure Classification:** Can we predict whether a case will be closed vs. remain open/null?
-- **Request Volume Forecasting:** Can we forecast daily/weekly request volumes?
-
-### Validation Strategy:
-- **Temporal split:** Train on 2011-2023, validate on 2024, test on 2025
-- **For clustering:** Silhouette score and visual inspection of cluster coherence.
-
-## Evaluation Metrics
-### Regression Tasks (Resolution Time Prediction):
-- RMSE (Root Mean Squared Error) - penalizes large errors
-- MAE (Mean Absolute Error) - interpretable average error in days/hours
-- R² - proportion of variance explained
-- MAPE (Mean Absolute Percentage Error) - for relative error understanding
-
-### Classification Tasks (Case Closure Status):
-- Accuracy - overall correctness
-- F1-Score - balance of precision and recall (especially for imbalanced classes)
-- Confusion Matrix - to understand misclassification patterns
-
-### Clustering Quality:
-- Silhouette Score - cluster cohesion and separation
-- Within-cluster variance - compactness measure
-
-### Forecasting Tasks:
-- RMSE and MAE for daily/weekly volume predictions
-- **Walk-forward validation:** iteratively train on historical data, predict next period, then expand training window
+### Project Resources
+- **Spark Project Document:** [Google Doc](https://docs.google.com/document/d/1-a7IIj5K5v1mcdvi0_cUSYJpfFmZ9QJmsYikYGl3bJ4/edit?tab=t.0)
+- **Boston Open Data Portal:** [311 Service Requests](https://data.boston.gov/dataset/311-service-requests)
