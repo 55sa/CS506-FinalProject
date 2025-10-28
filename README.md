@@ -4,7 +4,7 @@
 **Course:** CS506 — Data Science Project.      
 **Current Phase:** Midterm Report (Explora tory Data Analysis & Preliminary Modeling). 
 
-[Link to presentation video] (https://youtu.be/FsWG4mbJEvM)
+[Link to presentation video] (https://youtu.be/pshYbu_rqQ4)
 
 ---
 
