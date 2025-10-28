@@ -19,7 +19,7 @@ def train_xgboost(
     learning_rate: float = 0.1,
     max_depth: int = 6,
     random_state: int = 42,
-    use_gpu: bool = True
+    use_gpu: bool = True,
 ) -> xgb.XGBRegressor:
     """Train XGBoost regression model with optional GPU support."""
     if use_gpu:
@@ -29,10 +29,10 @@ def train_xgboost(
             learning_rate=learning_rate,
             max_depth=max_depth,
             random_state=random_state,
-            tree_method='hist',
-            device='cuda:0',
+            tree_method="hist",
+            device="cuda:0",
             n_jobs=-1,
-            verbosity=0
+            verbosity=0,
         )
     else:
         logger.info(f"Training CPU XGBoost model with {n_estimators} trees")
@@ -41,9 +41,9 @@ def train_xgboost(
             learning_rate=learning_rate,
             max_depth=max_depth,
             random_state=random_state,
-            tree_method='hist',
+            tree_method="hist",
             n_jobs=-1,
-            verbosity=0
+            verbosity=0,
         )
 
     model.fit(X_train, y_train)
@@ -53,9 +53,7 @@ def train_xgboost(
 
 
 def evaluate_xgboost(
-    model: xgb.XGBRegressor,
-    X_test: pd.DataFrame,
-    y_test: pd.Series
+    model: xgb.XGBRegressor, X_test: pd.DataFrame, y_test: pd.Series
 ) -> Tuple[float, float, pd.Series]:
     """Evaluate XGBoost model and return MAE, R², and predictions."""
     logger.info("Evaluating XGBoost model")
@@ -72,17 +70,16 @@ def evaluate_xgboost(
 
 
 def get_xgboost_feature_importance(
-    model: xgb.XGBRegressor,
-    feature_names: list,
-    top_n: int = 15
+    model: xgb.XGBRegressor, feature_names: list, top_n: int = 15
 ) -> pd.DataFrame:
     """Extract top N feature importances from trained XGBoost model."""
     logger.info(f"Extracting top {top_n} feature importances")
 
-    importance_df = pd.DataFrame({
-        "feature": feature_names,
-        "importance": model.feature_importances_
-    }).sort_values("importance", ascending=False).head(top_n)
+    importance_df = (
+        pd.DataFrame({"feature": feature_names, "importance": model.feature_importances_})
+        .sort_values("importance", ascending=False)
+        .head(top_n)
+    )
 
     logger.info("Top 5 features:")
     for idx, row in importance_df.head(5).iterrows():

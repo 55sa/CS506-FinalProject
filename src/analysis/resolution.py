@@ -87,13 +87,10 @@ def calculate_resolution_heatmap_data(
             logger.info(f"Excluded {excluded} outliers")
 
     top_queue_list = resolved["queue"].value_counts().head(top_queues).index
-    top_hood_list = (
-        resolved["neighborhood"].value_counts().head(top_neighborhoods).index
-    )
+    top_hood_list = resolved["neighborhood"].value_counts().head(top_neighborhoods).index
 
     heatmap_df = resolved[
-        resolved["queue"].isin(top_queue_list)
-        & resolved["neighborhood"].isin(top_hood_list)
+        resolved["queue"].isin(top_queue_list) & resolved["neighborhood"].isin(top_hood_list)
     ]
 
     heatmap_data = (

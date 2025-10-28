@@ -16,9 +16,7 @@ sns.set_theme(style="whitegrid")
 
 
 def plot_feature_importance(
-    importance_df: pd.DataFrame,
-    output_path: str,
-    model_name: str = "Model"
+    importance_df: pd.DataFrame, output_path: str, model_name: str = "Model"
 ) -> None:
     """Plot horizontal bar chart of top feature importances."""
     logger.info(f"Creating feature importance plot for {model_name}")
@@ -33,10 +31,12 @@ def plot_feature_importance(
         hue="feature",
         ax=ax,
         palette="viridis",
-        legend=False
+        legend=False,
     )
 
-    ax.set_title(f"Top {len(importance_df)} Feature Importances - {model_name}", fontsize=14, pad=20)
+    ax.set_title(
+        f"Top {len(importance_df)} Feature Importances - {model_name}", fontsize=14, pad=20
+    )
     ax.set_xlabel("Importance", fontsize=12)
     ax.set_ylabel("Feature", fontsize=12)
 
@@ -53,7 +53,7 @@ def plot_predicted_vs_actual(
     output_path: str,
     model_name: str = "Model",
     mae: float | None = None,
-    r2: float | None = None
+    r2: float | None = None,
 ) -> None:
     """Plot scatter plot of predicted vs actual values."""
     logger.info(f"Creating predicted vs actual plot for {model_name}")
@@ -70,12 +70,13 @@ def plot_predicted_vs_actual(
     # Add metrics to plot
     if mae is not None and r2 is not None:
         ax.text(
-            0.05, 0.95,
+            0.05,
+            0.95,
             f"MAE: {mae:.2f} days\nR²: {r2:.4f}",
             transform=ax.transAxes,
             fontsize=12,
             verticalalignment="top",
-            bbox=dict(boxstyle="round", facecolor="wheat", alpha=0.5)
+            bbox=dict(boxstyle="round", facecolor="wheat", alpha=0.5),
         )
 
     ax.set_title(f"Predicted vs Actual Resolution Time - {model_name}", fontsize=14, pad=20)
@@ -91,10 +92,7 @@ def plot_predicted_vs_actual(
     logger.info(f"Saved predicted vs actual plot to {output_path}")
 
 
-def plot_model_comparison(
-    results: dict,
-    output_path: str
-) -> None:
+def plot_model_comparison(results: dict, output_path: str) -> None:
     """Plot comparison of multiple models (MAE and R² scores)."""
     logger.info("Creating model comparison plot")
 

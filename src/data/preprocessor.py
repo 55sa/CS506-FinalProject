@@ -49,12 +49,22 @@ def derive_temporal_features(df: pd.DataFrame) -> pd.DataFrame:
     df["day_of_month"] = df["open_dt"].dt.day
 
     # Derive season (meteorological)
-    df["season"] = df["month"].map({
-        12: "Winter", 1: "Winter", 2: "Winter",
-        3: "Spring", 4: "Spring", 5: "Spring",
-        6: "Summer", 7: "Summer", 8: "Summer",
-        9: "Fall", 10: "Fall", 11: "Fall"
-    })
+    df["season"] = df["month"].map(
+        {
+            12: "Winter",
+            1: "Winter",
+            2: "Winter",
+            3: "Spring",
+            4: "Spring",
+            5: "Spring",
+            6: "Summer",
+            7: "Summer",
+            8: "Summer",
+            9: "Fall",
+            10: "Fall",
+            11: "Fall",
+        }
+    )
 
     # Weekend flag
     df["is_weekend"] = (df["day_of_week_num"] >= 5).astype(int)
@@ -73,12 +83,8 @@ def calculate_resolution_time(df: pd.DataFrame) -> pd.DataFrame:
     """Calculate resolution time in hours and days for closed cases."""
     logger.info("Calculating resolution times")
 
-    df["resolution_hours"] = (
-        (df["closed_dt"] - df["open_dt"]).dt.total_seconds() / 3600
-    )
-    df["resolution_time_days"] = (
-        (df["closed_dt"] - df["open_dt"]).dt.total_seconds() / 86400
-    )
+    df["resolution_hours"] = (df["closed_dt"] - df["open_dt"]).dt.total_seconds() / 3600
+    df["resolution_time_days"] = (df["closed_dt"] - df["open_dt"]).dt.total_seconds() / 86400
 
     resolved = df["resolution_hours"].notna().sum()
     logger.info(f"Calculated resolution times for {resolved} closed cases")
@@ -135,19 +141,13 @@ def validate_data_quality(df: pd.DataFrame) -> dict[str, Any]:
         "missing_open_dt": df["open_dt"].isna().sum(),
         "missing_closed_dt": df["closed_dt"].isna().sum(),
         "missing_neighborhood": (
-            df["neighborhood"].isna().sum()
-            if "neighborhood" in df.columns
-            else "N/A"
+            df["neighborhood"].isna().sum() if "neighborhood" in df.columns else "N/A"
         ),
         "case_status_breakdown": (
-            df["case_status"].value_counts().to_dict()
-            if "case_status" in df.columns
-            else "N/A"
+            df["case_status"].value_counts().to_dict() if "case_status" in df.columns else "N/A"
         ),
         "year_range": (
-            f"{int(df['year'].min())}-{int(df['year'].max())}"
-            if "year" in df.columns
-            else "N/A"
+            f"{int(df['year'].min())}-{int(df['year'].max())}" if "year" in df.columns else "N/A"
         ),
     }
 
@@ -158,9 +158,7 @@ def validate_data_quality(df: pd.DataFrame) -> dict[str, Any]:
     return quality_report
 
 
-def remove_invalid_records(
-    df: pd.DataFrame, drop_missing_open_dt: bool = True
-) -> pd.DataFrame:
+def remove_invalid_records(df: pd.DataFrame, drop_missing_open_dt: bool = True) -> pd.DataFrame:
     """Remove invalid records based on data quality rules."""
     logger.info("Removing invalid records")
     initial = len(df)
@@ -179,9 +177,7 @@ def remove_invalid_records(
     return df
 
 
-def preprocess_data(
-    df: pd.DataFrame, drop_invalid: bool = True
-) -> pd.DataFrame:
+def preprocess_data(df: pd.DataFrame, drop_invalid: bool = True) -> pd.DataFrame:
     """
     Apply full preprocessing pipeline to raw 311 data.
 

@@ -48,12 +48,12 @@ def main() -> None:
         "--sample",
         type=float,
         default=0.1,
-        help="Sampling percentage for Random Forest (default: 0.1 = 10%%)"
+        help="Sampling percentage for Random Forest (default: 0.1 = 10%%)",
     )
     parser.add_argument(
         "--gpu",
         action="store_true",
-        help="Enable GPU acceleration for LightGBM (requires GPU-enabled LightGBM)"
+        help="Enable GPU acceleration for LightGBM (requires GPU-enabled LightGBM)",
     )
     args = parser.parse_args()
 
@@ -139,41 +139,47 @@ def main() -> None:
 
     # Feature importance plots
     plot_feature_importance(
-        rf_importance,
-        str(output_dir / "feature_importance_rf.png"),
-        "Random Forest"
+        rf_importance, str(output_dir / "feature_importance_rf.png"), "Random Forest"
     )
     plot_feature_importance(
-        lgbm_importance,
-        str(output_dir / "feature_importance_lgbm.png"),
-        "LightGBM"
+        lgbm_importance, str(output_dir / "feature_importance_lgbm.png"), "LightGBM"
     )
     plot_feature_importance(
-        xgb_importance,
-        str(output_dir / "feature_importance_xgb.png"),
-        "XGBoost"
+        xgb_importance, str(output_dir / "feature_importance_xgb.png"), "XGBoost"
     )
 
     # Predicted vs actual plots
     plot_predicted_vs_actual(
-        y_test, lr_pred,
+        y_test,
+        lr_pred,
         str(output_dir / "predicted_vs_actual_lr.png"),
-        "Linear Regression", lr_mae, lr_r2
+        "Linear Regression",
+        lr_mae,
+        lr_r2,
     )
     plot_predicted_vs_actual(
-        y_test, rf_pred,
+        y_test,
+        rf_pred,
         str(output_dir / "predicted_vs_actual_rf.png"),
-        "Random Forest", rf_mae, rf_r2
+        "Random Forest",
+        rf_mae,
+        rf_r2,
     )
     plot_predicted_vs_actual(
-        y_test, lgbm_pred,
+        y_test,
+        lgbm_pred,
         str(output_dir / "predicted_vs_actual_lgbm.png"),
-        "LightGBM", lgbm_mae, lgbm_r2
+        "LightGBM",
+        lgbm_mae,
+        lgbm_r2,
     )
     plot_predicted_vs_actual(
-        y_test, xgb_pred,
+        y_test,
+        xgb_pred,
         str(output_dir / "predicted_vs_actual_xgb.png"),
-        "XGBoost", xgb_mae, xgb_r2
+        "XGBoost",
+        xgb_mae,
+        xgb_r2,
     )
 
     # Model comparison plot
