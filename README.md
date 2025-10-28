@@ -1,8 +1,8 @@
 # Boston 311 Service Request Analysis — Midterm Report
 
-**Team Members:** Jiahao He, Thong Dao, Sundeep Routhu, Yijia Chen, Julyssa Michelle Villa Machado
-**Course:** CS506 — Data Science Project
-**Current Phase:** Midterm Report (Exploratory Data Analysis & Preliminary Modeling)
+**Team Members:** Jiahao He, Thong Dao, Sundeep Routhu, Yijia Chen, Julyssa Michelle Villa Machado.       
+**Course:** CS506 — Data Science Project.      
+**Current Phase:** Midterm Report (Explora tory Data Analysis & Preliminary Modeling). 
 
 ---
 
