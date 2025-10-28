@@ -22,44 +22,44 @@ from src.utils.logger import get_logger
 
 logger = get_logger(__name__)
 
-from src.data.loader import load_data
-from src.data.preprocessor import preprocess_data
-from src.analysis.temporal import (
-    calculate_requests_per_year,
-    calculate_average_daily_contacts,
-)
 from src.analysis.categorical import (
-    calculate_request_types_overall,
-    calculate_top_neighborhoods,
-    calculate_trends_by_subject,
-    calculate_trends_by_reason,
-    calculate_trends_by_queue,
-    calculate_source_distribution,
     calculate_request_types_by_neighborhood_data,
-    calculate_top_types_by_year,
+    calculate_request_types_overall,
     calculate_source_by_year,
+    calculate_source_distribution,
     calculate_status_by_year,
+    calculate_top_neighborhoods,
+    calculate_top_types_by_year,
+    calculate_trends_by_queue,
+    calculate_trends_by_reason,
+    calculate_trends_by_subject,
 )
 from src.analysis.resolution import (
     calculate_average_resolution_by_queue,
     calculate_resolution_heatmap_data,
 )
+from src.analysis.temporal import (
+    calculate_average_daily_contacts,
+    calculate_requests_per_year,
+)
+from src.data.loader import load_data
+from src.data.preprocessor import preprocess_data
 from src.visualization.core_plots import (
-    plot_yearly_requests,
-    plot_top_request_types,
-    plot_request_types_by_neighborhood,
-    plot_trends_by_subject,
-    plot_trends_by_reason,
-    plot_trends_by_queue,
-    plot_volume_by_source,
     plot_avg_daily_contacts,
-    plot_top5_types_volume,
-    plot_resolution_by_queue,
-    plot_resolution_heatmap,
     plot_case_status_breakdown,
-    plot_top_neighborhoods,
+    plot_request_types_by_neighborhood,
+    plot_resolution_by_queue,
     plot_resolution_distribution,
+    plot_resolution_heatmap,
     plot_status_yearly_trends,
+    plot_top5_types_volume,
+    plot_top_neighborhoods,
+    plot_top_request_types,
+    plot_trends_by_queue,
+    plot_trends_by_reason,
+    plot_trends_by_subject,
+    plot_volume_by_source,
+    plot_yearly_requests,
 )
 
 
@@ -147,9 +147,7 @@ def main() -> None:
 
     step += 1
     logger.info(f"[{step}/{total_plots}] Average resolution time by QUEUE")
-    queue_resolution = calculate_average_resolution_by_queue(
-        df, exclude_outliers=True
-    )
+    queue_resolution = calculate_average_resolution_by_queue(df, exclude_outliers=True)
     queue_resolution = (
         queue_resolution[queue_resolution["count"] >= 100]
         .sort_values("mean_days", ascending=False)
@@ -210,35 +208,25 @@ def main() -> None:
     logger.info(
         f"  Date Range:             {df['open_dt'].min().date()} to {df['open_dt'].max().date()}"
     )
-    logger.info(
-        f"  Years Covered:          {df['year'].min():.0f} - {df['year'].max():.0f}"
-    )
+    logger.info(f"  Years Covered:          {df['year'].min():.0f} - {df['year'].max():.0f}")
     logger.info(f"  Unique Neighborhoods:   {df['neighborhood'].nunique():,}")
     logger.info(f"  Unique Request Types:   {df['type'].nunique():,}")
     logger.info(f"  Unique Subjects:        {df['subject'].nunique():,}")
     logger.info(f"  Unique Queues:          {df['queue'].nunique():,}")
 
     logger.info(f"\n📈 VOLUME METRICS:")
-    logger.info(
-        f"  Peak Year:              {yearly.idxmax():.0f} ({yearly.max():,} requests)"
-    )
-    logger.info(
-        f"  Lowest Year:            {yearly.idxmin():.0f} ({yearly.min():,} requests)"
-    )
+    logger.info(f"  Peak Year:              {yearly.idxmax():.0f} ({yearly.max():,} requests)")
+    logger.info(f"  Lowest Year:            {yearly.idxmin():.0f} ({yearly.min():,} requests)")
     logger.info(f"  Avg Requests/Year:      {yearly.mean():,.0f}")
     logger.info(f"  Avg Daily Requests:     {len(df) / df['date'].nunique():.0f}")
 
     logger.info(f"\n🔝 TOP REQUEST TYPES:")
-    for i, (type_name, count) in enumerate(
-        df["type"].value_counts().head(5).items(), 1
-    ):
+    for i, (type_name, count) in enumerate(df["type"].value_counts().head(5).items(), 1):
         pct = count / len(df) * 100
         logger.info(f"  {i}. {type_name}: {count:,} ({pct:.1f}%)")
 
     logger.info(f"\n🏘️  TOP NEIGHBORHOODS:")
-    for i, (hood, count) in enumerate(
-        df["neighborhood"].value_counts().head(5).items(), 1
-    ):
+    for i, (hood, count) in enumerate(df["neighborhood"].value_counts().head(5).items(), 1):
         pct = count / len(df) * 100
         logger.info(f"  {i}. {hood}: {count:,} ({pct:.1f}%)")
 
@@ -262,9 +250,7 @@ def main() -> None:
     logger.info(f"\n⏱️  RESOLUTION TIMES:")
     logger.info(f"  Cases with resolution:  {len(resolved_df):,}")
     logger.info(f"  Avg Resolution:         {resolved_df['resolution_days'].mean():.1f} days")
-    logger.info(
-        f"  Median Resolution:      {resolved_df['resolution_days'].median():.1f} days"
-    )
+    logger.info(f"  Median Resolution:      {resolved_df['resolution_days'].median():.1f} days")
     logger.info(
         f"  Fastest Queue (avg):    {queue_resolution['mean_days'].idxmin()} ({queue_resolution['mean_days'].min():.1f} days)"
     )

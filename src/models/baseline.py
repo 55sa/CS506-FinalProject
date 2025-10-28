@@ -12,10 +12,7 @@ from sklearn.metrics import mean_absolute_error, r2_score
 logger = logging.getLogger(__name__)
 
 
-def train_baseline_model(
-    X_train: pd.DataFrame,
-    y_train: pd.Series
-) -> LinearRegression:
+def train_baseline_model(X_train: pd.DataFrame, y_train: pd.Series) -> LinearRegression:
     """Train a baseline Linear Regression model."""
     logger.info("Training baseline Linear Regression model")
 
@@ -28,9 +25,7 @@ def train_baseline_model(
 
 
 def evaluate_model(
-    model: LinearRegression,
-    X_test: pd.DataFrame,
-    y_test: pd.Series
+    model: LinearRegression, X_test: pd.DataFrame, y_test: pd.Series
 ) -> Tuple[float, float, pd.Series]:
     """Evaluate model and return MAE, R², and predictions."""
     logger.info("Evaluating model on test set")

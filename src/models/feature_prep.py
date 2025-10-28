@@ -13,9 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 def prepare_ml_features(
-    df: pd.DataFrame,
-    test_size: float = 0.2,
-    random_state: int = 42
+    df: pd.DataFrame, test_size: float = 0.2, random_state: int = 42
 ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series, dict]:
     """
     Prepare features for machine learning models.
@@ -52,10 +50,20 @@ def prepare_ml_features(
 
     # Define categorical columns to encode
     categorical_cols = [
-        "subject", "reason", "type", "queue", "department",
-        "neighborhood", "location_zipcode", "source", "closure_reason",
-        "fire_district", "pwd_district", "police_district",
-        "city_council_district", "season"
+        "subject",
+        "reason",
+        "type",
+        "queue",
+        "department",
+        "neighborhood",
+        "location_zipcode",
+        "source",
+        "closure_reason",
+        "fire_district",
+        "pwd_district",
+        "police_district",
+        "city_council_district",
+        "season",
     ]
 
     # Encode categorical features
@@ -73,16 +81,28 @@ def prepare_ml_features(
     # Define feature columns
     feature_cols = [
         # Temporal features
-        "year", "month", "day_of_week_num", "hour", "day_of_month",
-        "is_holiday", "is_weekend",
+        "year",
+        "month",
+        "day_of_week_num",
+        "hour",
+        "day_of_month",
+        "is_holiday",
+        "is_weekend",
         # Encoded categorical features
-        "subject_encoded", "reason_encoded", "type_encoded",
-        "queue_encoded", "department_encoded",
-        "neighborhood_encoded", "location_zipcode_encoded",
-        "source_encoded", "closure_reason_encoded",
-        "fire_district_encoded", "pwd_district_encoded",
-        "police_district_encoded", "city_council_district_encoded",
-        "season_encoded"
+        "subject_encoded",
+        "reason_encoded",
+        "type_encoded",
+        "queue_encoded",
+        "department_encoded",
+        "neighborhood_encoded",
+        "location_zipcode_encoded",
+        "source_encoded",
+        "closure_reason_encoded",
+        "fire_district_encoded",
+        "pwd_district_encoded",
+        "police_district_encoded",
+        "city_council_district_encoded",
+        "season_encoded",
     ]
 
     # Filter to only available features
