@@ -261,6 +261,8 @@ Generates 15 visualizations → `outputs/figures/` (~2-3 min)
 ### 3. Resolution Time Prediction
 ```bash
 python -m src.predict_resolution_time
+# Optional: choose models to run (lr,rf,lgbm,xgb,extra,ensemble)
+python -m src.predict_resolution_time --models rf,lgbm,xgb,ensemble
 ```
 Trains 4 ML models and generates plots → `outputs/figures/resolution_time/` (~2-3 min)
 

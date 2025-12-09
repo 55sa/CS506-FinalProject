@@ -74,13 +74,25 @@ def main() -> None:
         action="store_true",
         help="Enable GPU acceleration for LightGBM (requires GPU-enabled LightGBM)",
     )
+    parser.add_argument(
+        "--models",
+        type=str,
+        default="lr,rf,lgbm,xgb,extra,ensemble",
+        help="Comma-separated models to run (choices: lr,rf,lgbm,xgb,extra,ensemble). Default: all.",
+    )
     args = parser.parse_args()
 
     logger.info("=" * 80)
     logger.info("RESOLUTION TIME PREDICTION - PHASE 2")
     logger.info("=" * 80)
+    selected_models = {m.strip().lower() for m in args.models.split(",") if m.strip()}
+    if not selected_models:
+        logger.warning("No models selected via --models; defaulting to all.")
+        selected_models = {"lr", "rf", "lgbm", "xgb", "extra", "ensemble"}
+
     logger.info(f"Random Forest sampling: {args.sample*100}%")
     logger.info(f"GPU acceleration: {'Enabled' if args.gpu else 'Disabled'}")
+    logger.info(f"Models selected: {sorted(selected_models)}")
 
     # Create output directory
     output_dir = Path("outputs/figures/resolution_time")
@@ -165,69 +177,87 @@ def main() -> None:
     # Train and evaluate models
     results = {}
 
+    lr_pred = None
+    rf_pred = None
+    lgbm_pred = None
+    xgb_pred = None
+    extra_pred = None
+
     # Model 1: Linear Regression Baseline
-    logger.info("=" * 80)
-    logger.info("MODEL: Linear Regression Baseline")
-    logger.info("=" * 80)
-    lr_model = train_baseline_model(X_train, y_train)
-    lr_mae, lr_r2, lr_pred = evaluate_model(lr_model, X_test, y_test)
-    results["Linear Regression"] = {"mae": lr_mae, "r2": lr_r2}
+    if "lr" in selected_models:
+        logger.info("=" * 80)
+        logger.info("MODEL: Linear Regression Baseline")
+        logger.info("=" * 80)
+        lr_model = train_baseline_model(X_train, y_train)
+        lr_mae, lr_r2, lr_pred = evaluate_model(lr_model, X_test, y_test)
+        results["Linear Regression"] = {"mae": lr_mae, "r2": lr_r2}
 
     # Model 2: Random Forest (with sampling)
-    logger.info("=" * 80)
-    logger.info("MODEL: Random Forest")
-    logger.info("=" * 80)
+    if "rf" in selected_models or "ensemble" in selected_models:
+        logger.info("=" * 80)
+        logger.info("MODEL: Random Forest")
+        logger.info("=" * 80)
 
-    # Sample training data for Random Forest
-    if args.sample < 1.0:
-        logger.info(f"Sampling {args.sample*100}% of training data for Random Forest")
-        X_train_rf = X_train.sample(frac=args.sample, random_state=42)
-        y_train_rf = y_train.loc[X_train_rf.index]
-        logger.info(f"RF training set: {len(X_train_rf)} samples")
-    else:
-        X_train_rf = X_train
-        y_train_rf = y_train
+        # Sample training data for Random Forest
+        if args.sample < 1.0:
+            logger.info(f"Sampling {args.sample*100}% of training data for Random Forest")
+            X_train_rf = X_train.sample(frac=args.sample, random_state=42)
+            y_train_rf = y_train.loc[X_train_rf.index]
+            logger.info(f"RF training set: {len(X_train_rf)} samples")
+        else:
+            X_train_rf = X_train
+            y_train_rf = y_train
 
-    rf_model = train_random_forest(X_train_rf, y_train_rf, params=rf_params)
-    rf_mae, rf_r2, rf_pred = evaluate_random_forest(rf_model, X_test, y_test)
-    rf_importance = get_feature_importance(rf_model, feature_names, top_n=15)
-    results["Random Forest"] = {"mae": rf_mae, "r2": rf_r2}
+        rf_model = train_random_forest(X_train_rf, y_train_rf, params=rf_params)
+        rf_mae, rf_r2, rf_pred = evaluate_random_forest(rf_model, X_test, y_test)
+        rf_importance = get_feature_importance(rf_model, feature_names, top_n=15)
+        results["Random Forest"] = {"mae": rf_mae, "r2": rf_r2}
 
     # Model 3: LightGBM
-    logger.info("=" * 80)
-    logger.info("MODEL: LightGBM (Production)")
-    logger.info("=" * 80)
-    lgbm_model = train_lightgbm(X_train, y_train, use_gpu=args.gpu, params=lgbm_params)
-    lgbm_mae, lgbm_r2, lgbm_pred = evaluate_lightgbm(lgbm_model, X_test, y_test)
-    lgbm_importance = get_lightgbm_feature_importance(lgbm_model, feature_names, top_n=15)
-    results["LightGBM"] = {"mae": lgbm_mae, "r2": lgbm_r2}
+    if "lgbm" in selected_models or "ensemble" in selected_models:
+        logger.info("=" * 80)
+        logger.info("MODEL: LightGBM (Production)")
+        logger.info("=" * 80)
+        lgbm_model = train_lightgbm(X_train, y_train, use_gpu=args.gpu, params=lgbm_params)
+        lgbm_mae, lgbm_r2, lgbm_pred = evaluate_lightgbm(lgbm_model, X_test, y_test)
+        lgbm_importance = get_lightgbm_feature_importance(lgbm_model, feature_names, top_n=15)
+        results["LightGBM"] = {"mae": lgbm_mae, "r2": lgbm_r2}
 
     # Model 4: XGBoost GPU
-    logger.info("=" * 80)
-    logger.info("MODEL: XGBoost GPU")
-    logger.info("=" * 80)
-    xgb_model = train_xgboost(X_train, y_train, use_gpu=args.gpu, params=xgb_params)
-    xgb_mae, xgb_r2, xgb_pred = evaluate_xgboost(xgb_model, X_test, y_test)
-    xgb_importance = get_xgboost_feature_importance(xgb_model, feature_names, top_n=15)
-    results["XGBoost"] = {"mae": xgb_mae, "r2": xgb_r2}
+    if "xgb" in selected_models or "ensemble" in selected_models:
+        logger.info("=" * 80)
+        logger.info("MODEL: XGBoost GPU")
+        logger.info("=" * 80)
+        xgb_model = train_xgboost(X_train, y_train, use_gpu=args.gpu, params=xgb_params)
+        xgb_mae, xgb_r2, xgb_pred = evaluate_xgboost(xgb_model, X_test, y_test)
+        xgb_importance = get_xgboost_feature_importance(xgb_model, feature_names, top_n=15)
+        results["XGBoost"] = {"mae": xgb_mae, "r2": xgb_r2}
 
     # Model 5: ExtraTrees
-    logger.info("=" * 80)
-    logger.info("MODEL: ExtraTrees")
-    logger.info("=" * 80)
-    extra_model = train_extra_trees(X_train, y_train, params=extra_params)
-    extra_mae, extra_r2, extra_pred = evaluate_extra_trees(extra_model, X_test, y_test)
-    extra_importance = get_extra_trees_feature_importance(extra_model, feature_names, top_n=15)
-    results["ExtraTrees"] = {"mae": extra_mae, "r2": extra_r2}
+    if "extra" in selected_models or "ensemble" in selected_models:
+        logger.info("=" * 80)
+        logger.info("MODEL: ExtraTrees")
+        logger.info("=" * 80)
+        extra_model = train_extra_trees(X_train, y_train, params=extra_params)
+        extra_mae, extra_r2, extra_pred = evaluate_extra_trees(extra_model, X_test, y_test)
+        extra_importance = get_extra_trees_feature_importance(extra_model, feature_names, top_n=15)
+        results["ExtraTrees"] = {"mae": extra_mae, "r2": extra_r2}
 
-    # Ensemble (simple average of tree-based models)
-    logger.info("=" * 80)
-    logger.info("MODEL: Ensemble (RF + LGBM + XGB + ExtraTrees)")
-    logger.info("=" * 80)
-    ensemble_pred = (rf_pred + lgbm_pred + xgb_pred + extra_pred) / 4
-    ensemble_mae = (ensemble_pred - y_test).abs().mean()
-    ensemble_r2 = 1 - ((y_test - ensemble_pred) ** 2).sum() / ((y_test - y_test.mean()) ** 2).sum()
-    results["Ensemble (avg)"] = {"mae": float(ensemble_mae), "r2": float(ensemble_r2)}
+    # Ensemble (simple average of available tree-based models)
+    if "ensemble" in selected_models:
+        logger.info("=" * 80)
+        logger.info("MODEL: Ensemble (average of selected tree models)")
+        logger.info("=" * 80)
+        tree_preds = [p for p in [rf_pred, lgbm_pred, xgb_pred, extra_pred] if p is not None]
+        if tree_preds:
+            ensemble_pred = sum(tree_preds) / len(tree_preds)
+            ensemble_mae = (ensemble_pred - y_test).abs().mean()
+            ensemble_r2 = 1 - ((y_test - ensemble_pred) ** 2).sum() / (
+                (y_test - y_test.mean()) ** 2
+            ).sum()
+            results["Ensemble (avg)"] = {"mae": float(ensemble_mae), "r2": float(ensemble_r2)}
+        else:
+            logger.warning("No tree models available for ensemble; skipping ensemble.")
 
     # Generate visualizations
     logger.info("=" * 80)
@@ -235,68 +265,80 @@ def main() -> None:
     logger.info("=" * 80)
 
     # Feature importance plots
-    plot_feature_importance(
-        rf_importance, str(output_dir / "feature_importance_rf.png"), "Random Forest"
-    )
-    plot_feature_importance(
-        lgbm_importance, str(output_dir / "feature_importance_lgbm.png"), "LightGBM"
-    )
-    plot_feature_importance(
-        xgb_importance, str(output_dir / "feature_importance_xgb.png"), "XGBoost"
-    )
-    plot_feature_importance(
-        extra_importance, str(output_dir / "feature_importance_extra_trees.png"), "ExtraTrees"
-    )
+    if "rf" in selected_models or ("ensemble" in selected_models and rf_pred is not None):
+        plot_feature_importance(
+            rf_importance, str(output_dir / "feature_importance_rf.png"), "Random Forest"
+        )
+    if "lgbm" in selected_models or ("ensemble" in selected_models and lgbm_pred is not None):
+        plot_feature_importance(
+            lgbm_importance, str(output_dir / "feature_importance_lgbm.png"), "LightGBM"
+        )
+    if "xgb" in selected_models or ("ensemble" in selected_models and xgb_pred is not None):
+        plot_feature_importance(
+            xgb_importance, str(output_dir / "feature_importance_xgb.png"), "XGBoost"
+        )
+    if "extra" in selected_models or ("ensemble" in selected_models and extra_pred is not None):
+        plot_feature_importance(
+            extra_importance,
+            str(output_dir / "feature_importance_extra_trees.png"),
+            "ExtraTrees",
+        )
 
     # Predicted vs actual plots
-    plot_predicted_vs_actual(
-        y_test,
-        lr_pred,
-        str(output_dir / "predicted_vs_actual_lr.png"),
-        "Linear Regression",
-        lr_mae,
-        lr_r2,
-    )
-    plot_predicted_vs_actual(
-        y_test,
-        rf_pred,
-        str(output_dir / "predicted_vs_actual_rf.png"),
-        "Random Forest",
-        rf_mae,
-        rf_r2,
-    )
-    plot_predicted_vs_actual(
-        y_test,
-        lgbm_pred,
-        str(output_dir / "predicted_vs_actual_lgbm.png"),
-        "LightGBM",
-        lgbm_mae,
-        lgbm_r2,
-    )
-    plot_predicted_vs_actual(
-        y_test,
-        xgb_pred,
-        str(output_dir / "predicted_vs_actual_xgb.png"),
-        "XGBoost",
-        xgb_mae,
-        xgb_r2,
-    )
-    plot_predicted_vs_actual(
-        y_test,
-        extra_pred,
-        str(output_dir / "predicted_vs_actual_extra_trees.png"),
-        "ExtraTrees",
-        extra_mae,
-        extra_r2,
-    )
-    plot_predicted_vs_actual(
-        y_test,
-        ensemble_pred,
-        str(output_dir / "predicted_vs_actual_ensemble.png"),
-        "Ensemble (avg)",
-        ensemble_mae,
-        ensemble_r2,
-    )
+    if lr_pred is not None and "lr" in selected_models:
+        plot_predicted_vs_actual(
+            y_test,
+            lr_pred,
+            str(output_dir / "predicted_vs_actual_lr.png"),
+            "Linear Regression",
+            lr_mae,
+            lr_r2,
+        )
+    if rf_pred is not None and ("rf" in selected_models or "ensemble" in selected_models):
+        plot_predicted_vs_actual(
+            y_test,
+            rf_pred,
+            str(output_dir / "predicted_vs_actual_rf.png"),
+            "Random Forest",
+            rf_mae,
+            rf_r2,
+        )
+    if lgbm_pred is not None and ("lgbm" in selected_models or "ensemble" in selected_models):
+        plot_predicted_vs_actual(
+            y_test,
+            lgbm_pred,
+            str(output_dir / "predicted_vs_actual_lgbm.png"),
+            "LightGBM",
+            lgbm_mae,
+            lgbm_r2,
+        )
+    if xgb_pred is not None and ("xgb" in selected_models or "ensemble" in selected_models):
+        plot_predicted_vs_actual(
+            y_test,
+            xgb_pred,
+            str(output_dir / "predicted_vs_actual_xgb.png"),
+            "XGBoost",
+            xgb_mae,
+            xgb_r2,
+        )
+    if extra_pred is not None and ("extra" in selected_models or "ensemble" in selected_models):
+        plot_predicted_vs_actual(
+            y_test,
+            extra_pred,
+            str(output_dir / "predicted_vs_actual_extra_trees.png"),
+            "ExtraTrees",
+            extra_mae,
+            extra_r2,
+        )
+    if "ensemble" in selected_models and "Ensemble (avg)" in results:
+        plot_predicted_vs_actual(
+            y_test,
+            ensemble_pred,
+            str(output_dir / "predicted_vs_actual_ensemble.png"),
+            "Ensemble (avg)",
+            results["Ensemble (avg)"]["mae"],
+            results["Ensemble (avg)"]["r2"],
+        )
 
     # Model comparison plot
     plot_model_comparison(results, str(output_dir / "model_comparison.png"))
