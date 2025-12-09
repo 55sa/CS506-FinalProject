@@ -81,8 +81,9 @@ We implemented `src/core_analysis.py` to generate all **15 core analytical visua
 
 ## 4. Data Modeling
 
-### 4.1 Objective
-Our first modeling goal is to **predict service resolution time (in days)** using request-level attributes such as type, location, and submission channel.
+### 4.1 Objectives
+- **Resolution time prediction:** Per-request regression using RF/LightGBM/XGBoost/baseline.
+- **Daily volume forecasting:** Aggregate daily requests and forecast using Prophet, SARIMA, and LightGBM (see `src/forecast_requests.py`).
 
 ---
 
@@ -165,6 +166,7 @@ Our first modeling goal is to **predict service resolution time (in days)** usin
 ├── src/
 │   ├── core_analysis.py  # Main script: generates all 15 visualizations
 │   ├── predict_resolution_time.py  # ML prediction pipeline
+│   ├── forecast_requests.py  # Daily request volume forecasting (Prophet/SARIMA/LightGBM)
 │   ├── tuning/             # Optuna hyperparameter tuning scripts
 │   ├── data/
 │   │   ├── loader.py     # Load and merge yearly CSV files
@@ -284,6 +286,14 @@ python -m src.predict_resolution_time --sample 1.0  # 100% (slower, more accurat
 python -m src.predict_resolution_time --gpu         # Enable GPU for LightGBM/XGBoost
 ```
 
+### 4. Daily Request Volume Forecasting
+```bash
+python -m src.forecast_requests --horizon 30
+```
+Forecasts daily request counts with Prophet, SARIMA, and LightGBM; outputs to `outputs/figures/forecast_requests/`.
+
+
+
 ---
 
 ## Output Files
@@ -303,6 +313,8 @@ outputs/figures/
     ├── predicted_vs_actual_lgbm.png
     ├── predicted_vs_actual_xgb.png
     └── model_comparison.png
+└── forecast_requests/                    # Daily volume forecasting
+    └── forecast_comparison.png
 
 outputs/maps/
 ├── request_density_heatmap.html          # Interactive coordinate density heatmap
@@ -349,6 +361,18 @@ python -m src.visualization.temporal
 python -m src.visualization.comparative
 python -m src.visualization.maps
 ```
+
+### Daily Request Volume Forecasting (Prophet, SARIMA, LightGBM)
+
+Standalone script to forecast daily request volume using three models; outputs a comparison plot to `outputs/figures/forecast_requests/`.
+
+```bash
+python -m src.forecast_requests --horizon 30
+```
+
+- Models: Prophet, SARIMA, LightGBM with lag/rolling features
+- Holdout: last `--horizon` days (default 30)
+- Output: `outputs/figures/forecast_requests/forecast_comparison.png` with overlayed forecasts and actuals
 
 ### Hyperparameter Tuning (Optuna, MAE)
 
