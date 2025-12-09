@@ -412,10 +412,6 @@ python -m src.tuning.xgboost_tuning --trials 30 --sample 0.1
 
 # ExtraTrees (CPU)
 python -m src.tuning.extra_trees_tuning --trials 30 --sample 0.1
-
-# ZIP choropleth prototype (interactive Folium)
-# Assumes GeoJSON at data/geo/ma_massachusetts_zip_codes_geo.min.json
-python prototype_zip_choropleth.py --output outputs/maps/zip_choropleth.html
 ```
 
 Notes:
