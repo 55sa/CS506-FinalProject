@@ -15,20 +15,11 @@ logger = logging.getLogger(__name__)
 def train_random_forest(
     X_train: pd.DataFrame,
     y_train: pd.Series,
-    n_estimators: int = 100,
-    max_depth: int | None = None,
-    random_state: int = 42,
+    params: dict[str, object],
 ) -> RandomForestRegressor:
     """Train Random Forest regression model."""
-    logger.info(f"Training Random Forest model with {n_estimators} trees")
-
-    model = RandomForestRegressor(
-        n_estimators=n_estimators,
-        max_depth=max_depth,
-        random_state=random_state,
-        n_jobs=-1,
-        verbose=0,
-    )
+    logger.info(f"Training Random Forest model with params: {params}")
+    model = RandomForestRegressor(**params)
 
     model.fit(X_train, y_train)
     logger.info("Random Forest training complete")

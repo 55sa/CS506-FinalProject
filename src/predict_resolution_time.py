@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
@@ -25,11 +26,7 @@ from src.models.random_forest import (
     get_feature_importance,
     train_random_forest,
 )
-from src.models.xgboost_model import (
-    evaluate_xgboost,
-    get_xgboost_feature_importance,
-    train_xgboost,
-)
+from src.models.xgboost_model import evaluate_xgboost, get_xgboost_feature_importance, train_xgboost
 from src.utils.logger import get_logger
 from src.visualization.model_plots import (
     plot_feature_importance,
@@ -38,6 +35,23 @@ from src.visualization.model_plots import (
 )
 
 logger = get_logger(__name__)
+
+
+def load_tuned_params(filename: str) -> dict[str, object] | None:
+    """Load tuned hyperparameters from outputs/tuning if available."""
+    path = Path("outputs/tuning") / filename
+    if not path.exists():
+        return None
+
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        best_params = data.get("best_params")
+        logger.info(f"Loaded tuned params from {path}: {best_params}")
+        return best_params if isinstance(best_params, dict) else None
+    except Exception as exc:  # pylint: disable=broad-except
+        logger.warning(f"Failed to load tuned params from {path}: {exc}")
+        return None
 
 
 def main() -> None:
@@ -83,6 +97,53 @@ def main() -> None:
     X_train, X_test, y_train, y_test, encoders = prepare_ml_features(df)
     feature_names = X_train.columns.tolist()
 
+    # Load tuned hyperparameters if available
+    rf_tuned_params = {}  # load_tuned_params("random_forest_tuning.json") or {}
+    lgbm_tuned_params = load_tuned_params("lightgbm_tuning.json") or {}
+    xgb_tuned_params = load_tuned_params("xgboost_tuning.json") or {}
+
+    if not rf_tuned_params:
+        logger.info("No tuned Random Forest params found; using defaults.")
+    if not lgbm_tuned_params:
+        logger.info("No tuned LightGBM params found; using defaults.")
+    if not xgb_tuned_params:
+        logger.info("No tuned XGBoost params found; using defaults.")
+
+    if args.gpu:
+        # Ensure CPU-specific params from tuning do not override GPU usage if user opts in
+        lgbm_tuned_params.pop("device", None)
+        xgb_tuned_params.pop("device", None)
+
+    # Default parameter baselines (overridable by tuned params)
+    rf_base_params: dict[str, object] = {
+        "n_estimators": 100,
+        "max_depth": None,
+        "random_state": 42,
+        "n_jobs": -1,
+        "verbose": 0,
+    }
+    lgbm_base_params: dict[str, object] = {
+        "n_estimators": 100,
+        "learning_rate": 0.1,
+        "max_depth": -1,
+        "random_state": 42,
+        "n_jobs": -1,
+        "verbose": -1,
+    }
+    xgb_base_params: dict[str, object] = {
+        "n_estimators": 100,
+        "learning_rate": 0.1,
+        "max_depth": 6,
+        "random_state": 42,
+        "tree_method": "hist",
+        "n_jobs": -1,
+        "verbosity": 0,
+    }
+
+    rf_params = {**rf_base_params, **rf_tuned_params}
+    lgbm_params = {**lgbm_base_params, **lgbm_tuned_params}
+    xgb_params = {**xgb_base_params, **xgb_tuned_params}
+
     # Train and evaluate models
     results = {}
 
@@ -109,7 +170,7 @@ def main() -> None:
         X_train_rf = X_train
         y_train_rf = y_train
 
-    rf_model = train_random_forest(X_train_rf, y_train_rf, n_estimators=100)
+    rf_model = train_random_forest(X_train_rf, y_train_rf, params=rf_params)
     rf_mae, rf_r2, rf_pred = evaluate_random_forest(rf_model, X_test, y_test)
     rf_importance = get_feature_importance(rf_model, feature_names, top_n=15)
     results["Random Forest"] = {"mae": rf_mae, "r2": rf_r2}
@@ -118,7 +179,7 @@ def main() -> None:
     logger.info("=" * 80)
     logger.info("MODEL: LightGBM (Production)")
     logger.info("=" * 80)
-    lgbm_model = train_lightgbm(X_train, y_train, n_estimators=100, use_gpu=args.gpu)
+    lgbm_model = train_lightgbm(X_train, y_train, use_gpu=args.gpu, params=lgbm_params)
     lgbm_mae, lgbm_r2, lgbm_pred = evaluate_lightgbm(lgbm_model, X_test, y_test)
     lgbm_importance = get_lightgbm_feature_importance(lgbm_model, feature_names, top_n=15)
     results["LightGBM"] = {"mae": lgbm_mae, "r2": lgbm_r2}
@@ -127,7 +188,7 @@ def main() -> None:
     logger.info("=" * 80)
     logger.info("MODEL: XGBoost GPU")
     logger.info("=" * 80)
-    xgb_model = train_xgboost(X_train, y_train, n_estimators=100, use_gpu=args.gpu)
+    xgb_model = train_xgboost(X_train, y_train, use_gpu=args.gpu, params=xgb_params)
     xgb_mae, xgb_r2, xgb_pred = evaluate_xgboost(xgb_model, X_test, y_test)
     xgb_importance = get_xgboost_feature_importance(xgb_model, feature_names, top_n=15)
     results["XGBoost"] = {"mae": xgb_mae, "r2": xgb_r2}

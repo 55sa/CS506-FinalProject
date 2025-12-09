@@ -15,29 +15,23 @@ logger = logging.getLogger(__name__)
 def train_lightgbm(
     X_train: pd.DataFrame,
     y_train: pd.Series,
-    n_estimators: int = 100,
-    learning_rate: float = 0.1,
-    max_depth: int = -1,
-    random_state: int = 42,
     use_gpu: bool = False,
+    params: dict[str, object] | None = None,
 ) -> LGBMRegressor:
     """Train LightGBM regression model."""
     device_type = "gpu" if use_gpu else "cpu"
-    logger.info(f"Training LightGBM model with {n_estimators} trees on {device_type.upper()}")
+    logger.info(f"Training LightGBM model on {device_type.upper()}")
 
-    # Base parameters
-    params = {
-        "n_estimators": n_estimators,
-        "learning_rate": learning_rate,
-        "max_depth": max_depth,
-        "random_state": random_state,
-        "n_jobs": -1,
-        "verbose": -1,
-    }
+    if params is None:
+        raise ValueError("LightGBM params must be provided by caller")
 
     # Add GPU parameters if enabled
     if use_gpu:
         params.update({"device": "gpu", "gpu_platform_id": 0, "gpu_device_id": 0})
+    else:
+        params["device"] = "cpu"
+
+    logger.info(f"LightGBM params: {params}")
 
     model = LGBMRegressor(**params)
     model.fit(X_train, y_train)

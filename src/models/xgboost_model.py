@@ -15,36 +15,22 @@ logger = logging.getLogger(__name__)
 def train_xgboost(
     X_train: pd.DataFrame,
     y_train: pd.Series,
-    n_estimators: int = 100,
-    learning_rate: float = 0.1,
-    max_depth: int = 6,
-    random_state: int = 42,
     use_gpu: bool = True,
+    params: dict[str, object] | None = None,
 ) -> xgb.XGBRegressor:
     """Train XGBoost regression model with optional GPU support."""
+    if params is None:
+        raise ValueError("XGBoost params must be provided by caller")
+
     if use_gpu:
-        logger.info(f"Training GPU XGBoost model with {n_estimators} trees")
-        model = xgb.XGBRegressor(
-            n_estimators=n_estimators,
-            learning_rate=learning_rate,
-            max_depth=max_depth,
-            random_state=random_state,
-            tree_method="hist",
-            device="cuda:0",
-            n_jobs=-1,
-            verbosity=0,
-        )
+        logger.info("Training GPU XGBoost model")
+        params["device"] = "cuda:0"
     else:
-        logger.info(f"Training CPU XGBoost model with {n_estimators} trees")
-        model = xgb.XGBRegressor(
-            n_estimators=n_estimators,
-            learning_rate=learning_rate,
-            max_depth=max_depth,
-            random_state=random_state,
-            tree_method="hist",
-            n_jobs=-1,
-            verbosity=0,
-        )
+        logger.info("Training CPU XGBoost model")
+        params["device"] = "cpu"
+
+    logger.info(f"XGBoost params: {params}")
+    model = xgb.XGBRegressor(**params)
 
     model.fit(X_train, y_train)
     logger.info("XGBoost training complete")
