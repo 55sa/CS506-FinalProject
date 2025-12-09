@@ -330,6 +330,26 @@ python -m src.visualization.comparative
 python -m src.visualization.maps
 ```
 
+### Hyperparameter Tuning (Optuna, MAE)
+
+CPU-only Optuna search with 3-fold CV, default 10% sampling to keep runs fast. Best MAE/params are saved to `outputs/tuning/*.json`.
+
+```bash
+# Random Forest (20–50 trials recommended)
+python -m src.tuning.random_forest_tuning --trials 30 --sample 0.1
+
+# LightGBM (CPU)
+python -m src.tuning.lightgbm_tuning --trials 30 --sample 0.1
+
+# XGBoost (CPU)
+python -m src.tuning.xgboost_tuning --trials 30 --sample 0.1
+```
+
+Notes:
+- Objective: minimize MAE with 3-fold CV.
+- Sampling: use `--sample 1.0` for full data (slower).
+- Outputs: JSON summaries in `outputs/tuning/` with best params/MAE/trials/sample.
+
 ### Using Jupyter Notebooks
 
 For exploratory analysis:
