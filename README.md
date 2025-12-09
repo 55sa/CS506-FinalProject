@@ -71,8 +71,8 @@ We implemented `src/core_analysis.py` to generate all **15 core analytical visua
 | 13 | Top 20 neighborhoods by request volume | Dorchester has the highest request density by far.                                                                                                     |
 | 14 | Resolution time distribution | Insight into common requests: new tree requests and long-term street light repair take the longest by far, while snow reports are cleared the fastest. |
 | 15 | Status trends year-over-year | Overall closure rate stable despite request volume growth.                                                                                             |
-| 16 | ZIP-level choropleth (interactive) | ZIPs like 02127, 02124, 02128 lead request volume; saved to `outputs/maps/zip_choropleth.html`. |
-| 17 | Coordinate density heatmap (interactive) | Request hotspots visualized over Boston using lat/lon; saved to `outputs/maps/request_density_heatmap.html`. |
+| 16 | Coordinate density heatmap (interactive) | Request hotspots visualized over Boston using lat/lon; saved to `outputs/maps/request_density_heatmap.html`. |
+| 17 | ZIP-level volume + median resolution choropleth (interactive) | Toggleable layers for request volume and median resolution time; saved to `outputs/maps/zip_choropleth_multi.html`. |
 
 **Runtime:** ~2–3 minutes for full dataset
 **Output Directory:** `outputs/figures/` (15 PNGs)
@@ -305,8 +305,8 @@ outputs/figures/
     └── model_comparison.png
 
 outputs/maps/
-├── zip_choropleth.html                   # Interactive ZIP-level request volume map
-└── request_density_heatmap.html          # Interactive coordinate density heatmap
+├── request_density_heatmap.html          # Interactive coordinate density heatmap
+└── zip_choropleth_multi.html             # Interactive ZIP volume + median resolution map
 ```
 
 ---

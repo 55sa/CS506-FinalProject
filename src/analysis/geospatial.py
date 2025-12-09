@@ -33,6 +33,43 @@ def calculate_zip_counts(df: pd.DataFrame) -> pd.DataFrame:
     return counts
 
 
+def calculate_zip_resolution_medians(
+    df: pd.DataFrame, max_days: float = 365.0
+) -> pd.DataFrame:
+    """Return median resolution time (days) per ZIP."""
+    if "location_zipcode" not in df.columns or "resolution_time_days" not in df.columns:
+        logger.warning(
+            "Required columns missing for ZIP resolution stats; returning empty DataFrame."
+        )
+        return pd.DataFrame(columns=["zipcode", "median_resolution_days"])
+
+    # Normalize ZIP
+    zips = (
+        df["location_zipcode"]
+        .astype(str)
+        .str.extract(r"(\d+)", expand=False)
+        .dropna()
+        .astype(float)
+        .astype(int)
+        .astype(str)
+        .str.zfill(5)
+    )
+
+    df_local = df.copy()
+    df_local["zipcode"] = zips
+
+    # Filter valid resolution times
+    res = df_local[df_local["resolution_time_days"].notna()].copy()
+    res = res[res["resolution_time_days"] <= max_days]
+
+    medians = (
+        res.groupby("zipcode")["resolution_time_days"].median().reset_index(name="median_resolution_days")
+    )
+
+    logger.info(f"Calculated ZIP median resolution for {len(medians)} ZIP codes (<= {max_days} days)")
+    return medians
+
+
 def extract_coordinates(df: pd.DataFrame) -> pd.DataFrame:
     """Return DataFrame with latitude/longitude columns, filtered to valid bounds."""
     lat_cols = [c for c in df.columns if c.lower() in {"latitude", "lat"}]
