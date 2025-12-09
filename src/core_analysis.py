@@ -34,6 +34,7 @@ from src.analysis.categorical import (
     calculate_trends_by_reason,
     calculate_trends_by_subject,
 )
+from src.analysis.geospatial import calculate_zip_counts, extract_coordinates
 from src.analysis.resolution import (
     calculate_average_resolution_by_queue,
     calculate_resolution_heatmap_data,
@@ -61,6 +62,7 @@ from src.visualization.core_plots import (
     plot_volume_by_source,
     plot_yearly_requests,
 )
+from src.visualization.maps import plot_density_heatmap, plot_zip_choropleth
 
 
 def main() -> None:
@@ -87,16 +89,18 @@ def main() -> None:
     logger.info(f"After preprocessing: {len(df):,} records")
     logger.info(f"Date range: {df['open_dt'].min()} to {df['open_dt'].max()}")
 
-    # Create output directory
+    # Create output directories
     output_dir = Path("outputs/figures")
     output_dir.mkdir(parents=True, exist_ok=True)
+    maps_output_dir = Path("outputs/maps")
+    maps_output_dir.mkdir(parents=True, exist_ok=True)
 
     logger.info("\n" + "=" * 80)
     logger.info("GENERATING VISUALIZATIONS (Analysis → Plot)")
     logger.info("=" * 80 + "\n")
 
     step = 0
-    total_plots = 15
+    total_plots = 17
 
     step += 1
     logger.info(f"[{step}/{total_plots}] Total volume of requests per year")
@@ -199,6 +203,17 @@ def main() -> None:
     logger.info(f"[{step}/{total_plots}] Year-over-year case status breakdown")
     status_yearly = calculate_status_by_year(df)
     plot_status_yearly_trends(status_yearly, output_dir)
+
+    step += 1
+    logger.info(f"[{step}/{total_plots}] ZIP-level choropleth (interactive)")
+    zip_counts = calculate_zip_counts(df)
+    geojson_path = Path("data/geo/ma_massachusetts_zip_codes_geo.min.json")
+    plot_zip_choropleth(zip_counts, geojson_path, maps_output_dir / "zip_choropleth.html")
+
+    step += 1
+    logger.info(f"[{step}/{total_plots}] Request density heatmap (interactive)")
+    coords = extract_coordinates(df)
+    plot_density_heatmap(coords, maps_output_dir / "request_density_heatmap.html")
     logger.info("\n" + "=" * 80)
     logger.info("COMPREHENSIVE SUMMARY STATISTICS (2011-2025)")
     logger.info("=" * 80)

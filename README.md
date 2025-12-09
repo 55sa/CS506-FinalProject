@@ -71,6 +71,8 @@ We implemented `src/core_analysis.py` to generate all **15 core analytical visua
 | 13 | Top 20 neighborhoods by request volume | Dorchester has the highest request density by far.                                                                                                     |
 | 14 | Resolution time distribution | Insight into common requests: new tree requests and long-term street light repair take the longest by far, while snow reports are cleared the fastest. |
 | 15 | Status trends year-over-year | Overall closure rate stable despite request volume growth.                                                                                             |
+| 16 | ZIP-level choropleth (interactive) | ZIPs like 02127, 02124, 02128 lead request volume; saved to `outputs/maps/zip_choropleth.html`. |
+| 17 | Coordinate density heatmap (interactive) | Request hotspots visualized over Boston using lat/lon; saved to `outputs/maps/request_density_heatmap.html`. |
 
 **Runtime:** ~2–3 minutes for full dataset
 **Output Directory:** `outputs/figures/` (15 PNGs)
@@ -301,6 +303,10 @@ outputs/figures/
     ├── predicted_vs_actual_lgbm.png
     ├── predicted_vs_actual_xgb.png
     └── model_comparison.png
+
+outputs/maps/
+├── zip_choropleth.html                   # Interactive ZIP-level request volume map
+└── request_density_heatmap.html          # Interactive coordinate density heatmap
 ```
 
 ---
@@ -360,6 +366,10 @@ python -m src.tuning.xgboost_tuning --trials 30 --sample 0.1
 
 # ExtraTrees (CPU)
 python -m src.tuning.extra_trees_tuning --trials 30 --sample 0.1
+
+# ZIP choropleth prototype (interactive Folium)
+# Assumes GeoJSON at data/geo/ma_massachusetts_zip_codes_geo.min.json
+python prototype_zip_choropleth.py --output outputs/maps/zip_choropleth.html
 ```
 
 Notes:
