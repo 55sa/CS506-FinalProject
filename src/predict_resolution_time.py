@@ -115,7 +115,8 @@ def main() -> None:
     feature_names = X_train.columns.tolist()
 
     # Load tuned hyperparameters if available
-    rf_tuned_params = load_tuned_params("random_forest_tuning.json") or {}
+    # Random Forest: tuned params performed worse; keep tuned params empty for now.
+    rf_tuned_params: dict[str, object] = {}
     lgbm_tuned_params = load_tuned_params("lightgbm_tuning.json") or {}
     xgb_tuned_params = load_tuned_params("xgboost_tuning.json") or {}
     extra_tuned_params = load_tuned_params("extra_trees_tuning.json") or {}

@@ -266,6 +266,15 @@ python -m src.predict_resolution_time --models rf,lgbm,xgb,ensemble
 ```
 Trains 4 ML models and generates plots → `outputs/figures/resolution_time/` (~2-3 min)
 
+`--models` values:
+- `lr` (Linear Regression baseline)
+- `rf` (Random Forest)
+- `lgbm` (LightGBM)
+- `xgb` (XGBoost)
+- `extra` (ExtraTrees)
+- `ensemble` (average of available tree models)
+Default: all models.
+
 **Optional:** Adjust Random Forest sampling and enable GPU:
 ```bash
 python -m src.predict_resolution_time --sample 0.1  # 10% (default, fast)
@@ -348,6 +357,9 @@ python -m src.tuning.lightgbm_tuning --trials 30 --sample 0.1
 
 # XGBoost (CPU)
 python -m src.tuning.xgboost_tuning --trials 30 --sample 0.1
+
+# ExtraTrees (CPU)
+python -m src.tuning.extra_trees_tuning --trials 30 --sample 0.1
 ```
 
 Notes:
