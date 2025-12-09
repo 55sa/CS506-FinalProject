@@ -85,6 +85,27 @@ We implemented `src/core_analysis.py` to generate all **15 core analytical visua
 - **Resolution time prediction:** Per-request regression using RF/LightGBM/XGBoost/baseline.
 - **Daily volume forecasting:** Aggregate daily requests and forecast using Prophet, SARIMA, and LightGBM (see `src/forecast_requests.py`).
 
+## Modeling: Resolution Time
+
+Entry point: `python -m src.predict_resolution_time`
+
+- **Models:** Linear Regression, Random Forest, XGBoost, LightGBM, ExtraTrees, plus a simple average ensemble.
+- **Metrics:** MAE and R^2 on an 80/20 split (default 10% sample for speed).
+- **Observed performance (sampled run):** Random Forest MAE ~6.8 days, R^2 ~0.95; tree models clearly outperform linear baseline.
+- **Outputs (`outputs/figures/resolution_time/`):**
+  - Feature importance plots (RF/LGBM/XGB)
+  - Predicted vs actual scatter plots
+  - Model comparison bar chart
+- **Repro defaults:** `random_state=42`; sampling controlled via `--sample` (0.1 default) to keep runtimes manageable on commodity hardware.
+
+## Modeling: Daily Request Volume Forecasting
+
+Entry point: `python -m src.forecast_requests --horizon 30`
+
+- **Data prep:** aggregates cleaned requests to daily counts.
+- **Models:** Prophet (yearly/weekly), SARIMA (1,1,1)x(1,0,1,7), LightGBM with calendar + lag (1,7,14) + rolling mean (7,14) features.
+- **Metrics:** MAE and RMSE on the holdout horizon (default 30 days).
+- **Outputs:** `outputs/figures/forecast_requests/forecast_comparison.png` with overlayed forecasts vs actuals.
 ---
 
 ### 4.2 Feature Preparation (`feature_prep.py`)
@@ -114,7 +135,20 @@ We implemented `src/core_analysis.py` to generate all **15 core analytical visua
 
 ---
 
-### 4.4 Evaluation Metrics
+### 4.4 Hyperparameter Tuning
+
+Scripts under `src/tuning/` (Optuna, MAE objective, 3-fold CV):
+- `random_forest_tuning.py`
+- `lightgbm_tuning.py`
+- `xgboost_tuning.py`
+- `extra_trees_tuning.py`
+
+CLI options: `--trials` (default 30), `--sample` (default 0.1). Results saved to `outputs/tuning/*.json`.
+
+---
+
+
+### 4.5 Evaluation Metrics
 
 - **Metrics:** Mean Absolute Error (**MAE**) and Coefficient of Determination (**R²**)
 - **Validation Strategy:** 80 % train / 20 % test random split
@@ -196,19 +230,7 @@ We implemented `src/core_analysis.py` to generate all **15 core analytical visua
 
 
 
-## 7. Future Plan
 
-Our next steps will focus on **model tuning and optimization** to further improve predictive accuracy:
-
-- **Hyperparameter Tuning for XGBoost and LightGBM:**
-  We plan to systematically tune key hyperparameters — especially the **learning rate**, along with `max_depth`, `n_estimators`, `subsample`, and `colsample_bytree` — using **Grid Search** and **Bayesian Optimization**.
-  Adjusting the learning rate will allow the models to converge more smoothly and avoid overfitting, potentially improving MAE and R² scores.
-
-- **Feature Engineering Enhancements:**
-  Add more temporal and spatial interaction features (e.g., `month × neighborhood`, holiday indicators, weather conditions) to capture contextual effects on resolution time.
-
-- **Model Comparison and Ensemble Methods:**
-  Combine XGBoost and LightGBM predictions using simple averaging or stacking to test for further gains.
 
 
 ---
