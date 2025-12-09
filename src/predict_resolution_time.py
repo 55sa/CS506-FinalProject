@@ -21,6 +21,11 @@ from src.models.lightgbm_model import (
     get_lightgbm_feature_importance,
     train_lightgbm,
 )
+from src.models.extra_trees import (
+    evaluate_extra_trees,
+    get_extra_trees_feature_importance,
+    train_extra_trees,
+)
 from src.models.random_forest import (
     evaluate_random_forest,
     get_feature_importance,
@@ -98,9 +103,10 @@ def main() -> None:
     feature_names = X_train.columns.tolist()
 
     # Load tuned hyperparameters if available
-    rf_tuned_params = {}  # load_tuned_params("random_forest_tuning.json") or {}
+    rf_tuned_params = load_tuned_params("random_forest_tuning.json") or {}
     lgbm_tuned_params = load_tuned_params("lightgbm_tuning.json") or {}
     xgb_tuned_params = load_tuned_params("xgboost_tuning.json") or {}
+    extra_tuned_params = load_tuned_params("extra_trees_tuning.json") or {}
 
     if not rf_tuned_params:
         logger.info("No tuned Random Forest params found; using defaults.")
@@ -108,6 +114,8 @@ def main() -> None:
         logger.info("No tuned LightGBM params found; using defaults.")
     if not xgb_tuned_params:
         logger.info("No tuned XGBoost params found; using defaults.")
+    if not extra_tuned_params:
+        logger.info("No tuned ExtraTrees params found; using defaults.")
 
     if args.gpu:
         # Ensure CPU-specific params from tuning do not override GPU usage if user opts in
@@ -139,10 +147,20 @@ def main() -> None:
         "n_jobs": -1,
         "verbosity": 0,
     }
+    extra_base_params: dict[str, object] = {
+        "n_estimators": 100,
+        "max_depth": 20,
+        "max_features": "sqrt",
+        "random_state": 42,
+        "n_jobs": 4,
+        "bootstrap": True,
+        "max_samples": 0.3,
+    }
 
     rf_params = {**rf_base_params, **rf_tuned_params}
     lgbm_params = {**lgbm_base_params, **lgbm_tuned_params}
     xgb_params = {**xgb_base_params, **xgb_tuned_params}
+    extra_params = {**extra_base_params, **extra_tuned_params}
 
     # Train and evaluate models
     results = {}
@@ -193,6 +211,24 @@ def main() -> None:
     xgb_importance = get_xgboost_feature_importance(xgb_model, feature_names, top_n=15)
     results["XGBoost"] = {"mae": xgb_mae, "r2": xgb_r2}
 
+    # Model 5: ExtraTrees
+    logger.info("=" * 80)
+    logger.info("MODEL: ExtraTrees")
+    logger.info("=" * 80)
+    extra_model = train_extra_trees(X_train, y_train, params=extra_params)
+    extra_mae, extra_r2, extra_pred = evaluate_extra_trees(extra_model, X_test, y_test)
+    extra_importance = get_extra_trees_feature_importance(extra_model, feature_names, top_n=15)
+    results["ExtraTrees"] = {"mae": extra_mae, "r2": extra_r2}
+
+    # Ensemble (simple average of tree-based models)
+    logger.info("=" * 80)
+    logger.info("MODEL: Ensemble (RF + LGBM + XGB + ExtraTrees)")
+    logger.info("=" * 80)
+    ensemble_pred = (rf_pred + lgbm_pred + xgb_pred + extra_pred) / 4
+    ensemble_mae = (ensemble_pred - y_test).abs().mean()
+    ensemble_r2 = 1 - ((y_test - ensemble_pred) ** 2).sum() / ((y_test - y_test.mean()) ** 2).sum()
+    results["Ensemble (avg)"] = {"mae": float(ensemble_mae), "r2": float(ensemble_r2)}
+
     # Generate visualizations
     logger.info("=" * 80)
     logger.info("GENERATING VISUALIZATIONS")
@@ -207,6 +243,9 @@ def main() -> None:
     )
     plot_feature_importance(
         xgb_importance, str(output_dir / "feature_importance_xgb.png"), "XGBoost"
+    )
+    plot_feature_importance(
+        extra_importance, str(output_dir / "feature_importance_extra_trees.png"), "ExtraTrees"
     )
 
     # Predicted vs actual plots
@@ -241,6 +280,22 @@ def main() -> None:
         "XGBoost",
         xgb_mae,
         xgb_r2,
+    )
+    plot_predicted_vs_actual(
+        y_test,
+        extra_pred,
+        str(output_dir / "predicted_vs_actual_extra_trees.png"),
+        "ExtraTrees",
+        extra_mae,
+        extra_r2,
+    )
+    plot_predicted_vs_actual(
+        y_test,
+        ensemble_pred,
+        str(output_dir / "predicted_vs_actual_ensemble.png"),
+        "Ensemble (avg)",
+        ensemble_mae,
+        ensemble_r2,
     )
 
     # Model comparison plot

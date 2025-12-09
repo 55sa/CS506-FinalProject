@@ -105,6 +105,8 @@ Our first modeling goal is to **predict service resolution time (in days)** usin
 | **Random Forest Regressor** | `random_forest.py` | Ensemble of decision trees (`n_estimators`, `max_depth`) capturing non-linear patterns. |
 | **XGBoost Regressor** | `xgboost_model.py` | Gradient-boosted trees (`tree_method='hist'`, `learning_rate`, `max_depth`, `n_estimators`); **GPU-optional** (`device='cuda:0'`). |
 | **LightGBM Regressor** | `lightgbm_model.py` | Fast gradient boosting (`learning_rate`, `max_depth`, `n_estimators`); **GPU-optional** (`device='gpu'`). |
+| **ExtraTrees Regressor** | `extra_trees.py` | Bagging-style trees; strong baseline, currently using sklearn defaults. |
+| **Ensemble (avg)** | `predict_resolution_time.py` | Simple average of RF + LightGBM + XGBoost + ExtraTrees predictions. |
 
 
 ---
