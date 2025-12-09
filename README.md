@@ -161,6 +161,7 @@ Our first modeling goal is to **predict service resolution time (in days)** usin
 ├── src/
 │   ├── core_analysis.py  # Main script: generates all 15 visualizations
 │   ├── predict_resolution_time.py  # ML prediction pipeline
+│   ├── tuning/             # Optuna hyperparameter tuning scripts
 │   ├── data/
 │   │   ├── loader.py     # Load and merge yearly CSV files
 │   │   └── preprocessor.py # Clean and derive features
