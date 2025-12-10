@@ -75,7 +75,7 @@ We implemented `src/core_analysis.py` to generate all **17 visualizations** (15 
 | 17 | ZIP-level volume + median resolution choropleth (interactive) | Toggleable layers for request volume and median resolution time; saved to `outputs/maps/zip_choropleth_multi.html`. |
 
 **Runtime:** ~2–3 minutes for full dataset
-**Output Directories:** `outputs/figures/` (15 PNGs) and `outputs/maps/` (2 HTML maps)
+**Output Directories:** `outputs/figures/` (15 PNGs) and `outputs/maps/` (2 HTML maps; ZIP GeoJSON auto-downloaded if missing)
 
 ---
 
@@ -118,6 +118,9 @@ Entry point: `python -m src.forecast_requests --horizon 30`
   - Label-encoded all categorical columns
   - Numeric columns imputed using the **median**
 - **Split:** 80 % training / 20 % testing (`random_state = 42`)
+
+**Forecasting features (daily volume):** aggregated daily counts with calendar fields (year, month, day, weekday, week-of-year), lags (1, 7, 14), and rolling means (7, 14) for LightGBM; Prophet/SARIMA use the aggregated daily series.
+
 
 ---
 
@@ -282,7 +285,7 @@ Downloads ~1.8 GB to `data/raw/` (~5-10 min)
 ```bash
 python -m src.core_analysis
 ```
-Generates 15 visualizations → `outputs/figures/` (~2-3 min)
+Generates 15 PNG visualizations → `outputs/figures/` and 2 interactive maps (HTML) → `outputs/maps/` (~2-3 min; ZIP GeoJSON auto-downloaded if missing)
 
 ### 3. Resolution Time Prediction
 ```bash
