@@ -331,15 +331,9 @@ Resolution-time visuals (PNG, `outputs/figures/resolution_time/`):
    ```bash
    brew install libomp
    ```
-   If LightGBM still fails to load `libomp.dylib`, reinstall it in your venv after installing libomp:
-   ```bash
-   pip install --force-reinstall lightgbm
-   ```
 
-5. **Windows:** pip LightGBM wheels include the needed runtime. If you see LightGBM build errors, ensure you have the Microsoft C++ Build Tools/Visual C++ Redistributable installed, or reinstall LightGBM:
-   ```bash
-   pip install --force-reinstall lightgbm
-   ```
+5. **Windows:** LightGBM wheels bundle OpenMP. If you see OpenMP/`vcomp` missing errors, install or update the Microsoft Visual C++ Redistributable (x64), then reinstall LightGBM in your venv if needed.
+
 
 ---
 
