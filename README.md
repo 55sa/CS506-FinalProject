@@ -326,6 +326,21 @@ Resolution-time visuals (PNG, `outputs/figures/resolution_time/`):
    pip install -r requirements.txt
    ```
 
+4. **macOS: install OpenMP runtime (required by LightGBM)**
+   The pip LightGBM wheel depends on the system `libomp` library. Install via Homebrew:
+   ```bash
+   brew install libomp
+   ```
+   If LightGBM still fails to load `libomp.dylib`, reinstall it in your venv after installing libomp:
+   ```bash
+   pip install --force-reinstall lightgbm
+   ```
+
+5. **Windows:** pip LightGBM wheels include the needed runtime. If you see LightGBM build errors, ensure you have the Microsoft C++ Build Tools/Visual C++ Redistributable installed, or reinstall LightGBM:
+   ```bash
+   pip install --force-reinstall lightgbm
+   ```
+
 ---
 
 ## Quick Start
