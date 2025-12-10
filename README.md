@@ -459,6 +459,7 @@ plot_requests_per_year(yearly_counts, output_path='outputs/figures/yearly_reques
 - **Visualization:** matplotlib, seaborn, plotly
 - **Geospatial:** geopandas, folium
 - **Machine Learning:** scikit-learn, LightGBM, XGBoost
+- **Forecasting:** Prophet, statsmodels (SARIMA)
 - **Environment:** Jupyter notebooks + Python scripts
 
 ### Project Resources
