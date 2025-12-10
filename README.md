@@ -107,6 +107,10 @@ Visual outputs (PNG, `outputs/figures/`):
 
 ![15. Status trends year-over-year](outputs/figures/15_status_yearly_trends.png)
 
+![16. Coordinate density heatmap (static)](outputs/figures/request_density.png)
+
+![17. ZIP-level volume + median resolution choropleth (static)](outputs/figures/zip_choropleth.png)
+
 **Runtime:** ~2–3 minutes for full dataset
 **Output Directories:** `outputs/figures/` (15 PNGs) and `outputs/maps/` (2 HTML maps; ZIP GeoJSON auto-downloaded if missing)
 
@@ -222,6 +226,25 @@ CLI options: `--trials` (default 30), `--sample` (default 0.1). Results saved to
 - `year`, `closure_reason_encoded`, `reason_encoded`, and `queue_encoded` consistently appear as dominant predictors across all models.
 - Linear Regression fails to capture non-linear effects, confirming the need for ensemble tree methods.
 - Fine-tuning **learning rate** and **tree depth** for XGBoost/LightGBM is expected to further improve performance.
+
+
+Resolution-time visuals (PNG, `outputs/figures/resolution_time/`):
+
+![Model comparison](outputs/figures/resolution_time/model_comparison.png)
+
+![Predicted vs actual - Random Forest](outputs/figures/resolution_time/predicted_vs_actual_rf.png)
+
+![Predicted vs actual - LightGBM](outputs/figures/resolution_time/predicted_vs_actual_lgbm.png)
+
+![Predicted vs actual - XGBoost](outputs/figures/resolution_time/predicted_vs_actual_xgb.png)
+
+![Predicted vs actual - Linear Regression](outputs/figures/resolution_time/predicted_vs_actual_lr.png)
+
+![Feature importance - Random Forest](outputs/figures/resolution_time/feature_importance_rf.png)
+
+![Feature importance - LightGBM](outputs/figures/resolution_time/feature_importance_lgbm.png)
+
+![Feature importance - XGBoost](outputs/figures/resolution_time/feature_importance_xgb.png)
 
 
 ---
