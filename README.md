@@ -52,7 +52,7 @@ The dataset includes detailed request information such as:
 
 ## 3. Preliminary Data Visualizations
 
-We implemented `src/core_analysis.py` to generate all **15 core analytical visualizations**, corresponding to the analytical goals defined in our project plan.
+We implemented `src/core_analysis.py` to generate all **17 visualizations** (15 PNGs + 2 interactive maps), corresponding to the analytical goals defined in our project plan.
 
 | # | Visualization | Key Findings                                                                                                                                           |
 |--:|----------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -75,7 +75,7 @@ We implemented `src/core_analysis.py` to generate all **15 core analytical visua
 | 17 | ZIP-level volume + median resolution choropleth (interactive) | Toggleable layers for request volume and median resolution time; saved to `outputs/maps/zip_choropleth_multi.html`. |
 
 **Runtime:** ~2–3 minutes for full dataset
-**Output Directory:** `outputs/figures/` (15 PNGs)
+**Output Directories:** `outputs/figures/` (15 PNGs) and `outputs/maps/` (2 HTML maps)
 
 ---
 
@@ -326,15 +326,15 @@ outputs/figures/
 ├── 2_top_request_types_overall.png
 ├── ...
 ├── 15_status_yearly_trends.png
-└── resolution_time/                      # ML predictions (8 files)
-    ├── feature_importance_rf.png
-    ├── feature_importance_lgbm.png
-    ├── feature_importance_xgb.png
-    ├── predicted_vs_actual_lr.png
-    ├── predicted_vs_actual_rf.png
-    ├── predicted_vs_actual_lgbm.png
-    ├── predicted_vs_actual_xgb.png
-    └── model_comparison.png
+├── resolution_time/                      # ML predictions (8 files)
+│   ├── feature_importance_rf.png
+│   ├── feature_importance_lgbm.png
+│   ├── feature_importance_xgb.png
+│   ├── predicted_vs_actual_lr.png
+│   ├── predicted_vs_actual_rf.png
+│   ├── predicted_vs_actual_lgbm.png
+│   ├── predicted_vs_actual_xgb.png
+│   └── model_comparison.png
 └── forecast_requests/                    # Daily volume forecasting
     └── forecast_comparison.png
 
