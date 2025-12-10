@@ -255,7 +255,6 @@ Resolution-time visuals (PNG, `outputs/figures/resolution_time/`):
 ├── data/
 │   ├── raw/              # Downloaded CSV files from Boston gov (2011-2025)
 │   └── processed/        # Cleaned and merged datasets
-├── notebooks/            # Exploratory analysis (Jupyter)
 ├── src/
 │   ├── core_analysis.py  # Main script: generates all 15 visualizations
 │   ├── predict_resolution_time.py  # ML prediction pipeline
@@ -478,14 +477,6 @@ Notes:
 - Sampling: use `--sample 1.0` for full data (slower).
 - Outputs: JSON summaries in `outputs/tuning/` with best params/MAE/trials/sample.
 
-### Using Jupyter Notebooks
-
-For exploratory analysis:
-```bash
-jupyter notebook
-```
-Navigate to the `notebooks/` directory.
-
 ### Python API
 
 ```python
@@ -516,7 +507,7 @@ plot_requests_per_year(yearly_counts, output_path='outputs/figures/yearly_reques
 - **Geospatial:** geopandas, folium
 - **Machine Learning:** scikit-learn, LightGBM, XGBoost
 - **Forecasting:** Prophet, statsmodels (SARIMA)
-- **Environment:** Jupyter notebooks + Python scripts
+- **Environment:** Python scripts
 
 ### Project Resources
 - **Spark Project Document:** [Google Doc](https://docs.google.com/document/d/1-a7IIj5K5v1mcdvi0_cUSYJpfFmZ9QJmsYikYGl3bJ4/edit?tab=t.0)
