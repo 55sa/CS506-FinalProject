@@ -1,8 +1,8 @@
-# Boston 311 Service Request Analysis — Midterm Report
+# Boston 311 Service Request Analysis — Final Report
 
 **Team Members:** Jiahao He, Thong Dao, Sundeep Routhu, Yijia Chen, Julyssa Michelle Villa Machado.       
 **Course:** CS506 — Data Science Project.      
-**Current Phase:** Midterm Report (Explora tory Data Analysis & Preliminary Modeling). 
+**Current Phase:** End-of-Semester Report (Final Analysis & Modeling). 
 
 [Link to presentation video](https://youtu.be/pshYbu_rqQ4)
 
@@ -50,7 +50,7 @@ The dataset includes detailed request information such as:
 
 ---
 
-## 3. Preliminary Data Visualizations
+## 3. Final Data Visualizations
 
 We implemented `src/core_analysis.py` to generate all **17 visualizations** (15 PNGs + 2 interactive maps), corresponding to the analytical goals defined in our project plan.
 
@@ -195,7 +195,7 @@ CLI options: `--trials` (default 30), `--sample` (default 0.1). Results saved to
 
 ---
 
-## 5. Preliminary Results
+## 5. Final Results
 
 | Model | MAE (days) | R² | Notes |
 |-------|------------|----|-------|
