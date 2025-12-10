@@ -74,6 +74,39 @@ We implemented `src/core_analysis.py` to generate all **17 visualizations** (15 
 | 16 | Coordinate density heatmap (interactive) | Request hotspots visualized over Boston using lat/lon; saved to `outputs/maps/request_density_heatmap.html`. |
 | 17 | ZIP-level volume + median resolution choropleth (interactive) | Toggleable layers for request volume and median resolution time; saved to `outputs/maps/zip_choropleth_multi.html`. |
 
+
+Visual outputs (PNG, `outputs/figures/`):
+
+![1. Total requests per year](outputs/figures/1_requests_per_year.png)
+
+![2. Top 20 request types overall](outputs/figures/2_top_request_types_overall.png)
+
+![3. Top request types by neighborhood](outputs/figures/3_request_types_by_neighborhood.png)
+
+![4. Trends by SUBJECT](outputs/figures/4_trends_by_subject.png)
+
+![5. Trends by REASON](outputs/figures/5_trends_by_reason.png)
+
+![6. Trends by QUEUE](outputs/figures/6_trends_by_queue.png)
+
+![7. Request volume by SOURCE](outputs/figures/7_volume_by_source.png)
+
+![8. Average daily contacts per year](outputs/figures/8_avg_daily_contacts.png)
+
+![9. Top 5 request types over time](outputs/figures/9_top5_types_volume.png)
+
+![10. Average resolution time by QUEUE](outputs/figures/10_resolution_by_queue.png)
+
+![11. Resolution time heatmap (QUEUE x Neighborhood)](outputs/figures/11_resolution_queue_neighborhood.png)
+
+![12. Case status breakdown (Closed/Open/Null)](outputs/figures/12_case_status_breakdown.png)
+
+![13. Top 20 neighborhoods by request volume](outputs/figures/13_top_neighborhoods.png)
+
+![14. Resolution time distribution](outputs/figures/14_resolution_distribution.png)
+
+![15. Status trends year-over-year](outputs/figures/15_status_yearly_trends.png)
+
 **Runtime:** ~2–3 minutes for full dataset
 **Output Directories:** `outputs/figures/` (15 PNGs) and `outputs/maps/` (2 HTML maps; ZIP GeoJSON auto-downloaded if missing)
 
