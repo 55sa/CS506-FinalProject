@@ -7,19 +7,49 @@
 [Link to presentation video](https://youtu.be/ceKJIlxZ8ek)
 
 ---
+# Usage
 
-## 1. Project Overview
+## Setup
 
-The goal of this project is to build a comprehensive **historical database of 311 service requests** for the City of Boston from **2011 to 2025**, analyze temporal and spatial trends, and create predictive models to improve city service responsiveness.
+### Prerequisites
+- Python 3.10 or higher
+- pip package manager
+- (Optional) Virtual environment tool (venv, conda, etc.)
 
-Our team has completed:
-- Collection and cleaning of **15 years (2011–2025)** of data (~5 million records)
-- A robust **data pipeline** for preprocessing and visualization
-- **17 comprehensive visualizations** 
-- **Multiple machine learning models** including Linear Regression, Random Forest, XGBoost, LightGBM, ExtraTrees, and ensemble methods
-- **Daily request volume forecasting** using Prophet, SARIMA, and LightGBM
-- **Hyperparameter tuning** with Optuna for optimal model performance
-- Strong predictive results with Random Forest achieving **R² = 0.95** and **MAE = 6.78 days**
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd CS506-FinalProject
+   ```
+
+2. **Create a virtual environment (recommended)**
+   ```bash
+   python -m venv venv
+
+   # On macOS/Linux
+   source venv/bin/activate
+
+   # On Windows
+   venv\Scripts\activate
+   ```
+
+3. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **macOS: install OpenMP runtime (required by LightGBM)**
+   The pip LightGBM wheel depends on the system `libomp` library. Install via Homebrew:
+   ```bash
+   brew install libomp
+   ```
+
+5. **Windows:** LightGBM wheels bundle OpenMP. If you see OpenMP/`vcomp` missing errors, install or update the Microsoft Visual C++ Redistributable (x64), then reinstall LightGBM in your venv if needed.
+
+
+---
 
 ## Quick Start
 
@@ -68,6 +98,49 @@ Forecasts daily request counts with Prophet, SARIMA, and LightGBM; outputs to `o
 
 
 ---
+
+## Output Files
+
+```
+outputs/figures/
+├── 1_requests_per_year.png               # Core analytics (15 files)
+├── 2_top_request_types_overall.png
+├── ...
+├── 15_status_yearly_trends.png
+├── resolution_time/                      # ML predictions (8 files)
+│   ├── feature_importance_rf.png
+│   ├── feature_importance_lgbm.png
+│   ├── feature_importance_xgb.png
+│   ├── predicted_vs_actual_lr.png
+│   ├── predicted_vs_actual_rf.png
+│   ├── predicted_vs_actual_lgbm.png
+│   ├── predicted_vs_actual_xgb.png
+│   └── model_comparison.png
+└── forecast_requests/                    # Daily volume forecasting
+    └── forecast_comparison.png
+
+outputs/maps/
+├── request_density_heatmap.html          # Interactive coordinate density heatmap
+└── zip_choropleth_multi.html             # Interactive ZIP volume + median resolution map
+```
+
+---
+
+
+
+## 1. Project Overview
+
+The goal of this project is to build a comprehensive **historical database of 311 service requests** for the City of Boston from **2011 to 2025**, analyze temporal and spatial trends, and create predictive models to improve city service responsiveness.
+
+Our team has completed:
+- Collection and cleaning of **15 years (2011–2025)** of data (~5 million records)
+- A robust **data pipeline** for preprocessing and visualization
+- **17 comprehensive visualizations** 
+- **Multiple machine learning models** including Linear Regression, Random Forest, XGBoost, LightGBM, ExtraTrees, and ensemble methods
+- **Daily request volume forecasting** using Prophet, SARIMA, and LightGBM
+- **Hyperparameter tuning** with Optuna for optimal model performance
+- Strong predictive results with Random Forest achieving **R² = 0.95** and **MAE = 6.78 days**
+
 
 ## 2. Data Processing Summary
 
@@ -336,131 +409,9 @@ Resolution-time visuals (PNG, `outputs/figures/resolution_time/`):
 
 
 
-
-
-
 ---
 
-# Usage & Troubleshooting
-
-## Setup
-
-### Prerequisites
-- Python 3.10 or higher
-- pip package manager
-- (Optional) Virtual environment tool (venv, conda, etc.)
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd CS506-FinalProject
-   ```
-
-2. **Create a virtual environment (recommended)**
-   ```bash
-   python -m venv venv
-
-   # On macOS/Linux
-   source venv/bin/activate
-
-   # On Windows
-   venv\Scripts\activate
-   ```
-
-3. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **macOS: install OpenMP runtime (required by LightGBM)**
-   The pip LightGBM wheel depends on the system `libomp` library. Install via Homebrew:
-   ```bash
-   brew install libomp
-   ```
-
-5. **Windows:** LightGBM wheels bundle OpenMP. If you see OpenMP/`vcomp` missing errors, install or update the Microsoft Visual C++ Redistributable (x64), then reinstall LightGBM in your venv if needed.
-
-
----
-
-## Quick Start
-
-### 1. Download Data
-```bash
-python download_data.py
-```
-Downloads ~1.8 GB to `data/raw/` (~5-10 min)
-
-### 2. Core Analytics
-```bash
-python -m src.core_analysis
-```
-Generates 15 PNG visualizations → `outputs/figures/` and 2 interactive maps (HTML) → `outputs/maps/` (~2-3 min; ZIP GeoJSON auto-downloaded if missing)
-
-### 3. Resolution Time Prediction
-```bash
-python -m src.predict_resolution_time
-# Optional: choose models to run (lr,rf,lgbm,xgb,extra,ensemble)
-python -m src.predict_resolution_time --models rf,lgbm,xgb,ensemble
-```
-Trains 4 ML models and generates plots → `outputs/figures/resolution_time/` (~2-3 min)
-
-`--models` values:
-- `lr` (Linear Regression baseline)
-- `rf` (Random Forest)
-- `lgbm` (LightGBM)
-- `xgb` (XGBoost)
-- `extra` (ExtraTrees)
-- `ensemble` (average of available tree models)
-Default: all models.
-
-**Optional:** Adjust Random Forest sampling and enable GPU:
-```bash
-python -m src.predict_resolution_time --sample 0.1  # 10% (default, fast)
-python -m src.predict_resolution_time --sample 1.0  # 100% (slower, more accurate)
-python -m src.predict_resolution_time --gpu         # Enable GPU for LightGBM/XGBoost
-```
-
-### 4. Daily Request Volume Forecasting
-```bash
-python -m src.forecast_requests --horizon 30
-```
-Forecasts daily request counts with Prophet, SARIMA, and LightGBM; outputs to `outputs/figures/forecast_requests/`.
-
-
-
----
-
-## Output Files
-
-```
-outputs/figures/
-├── 1_requests_per_year.png               # Core analytics (15 files)
-├── 2_top_request_types_overall.png
-├── ...
-├── 15_status_yearly_trends.png
-├── resolution_time/                      # ML predictions (8 files)
-│   ├── feature_importance_rf.png
-│   ├── feature_importance_lgbm.png
-│   ├── feature_importance_xgb.png
-│   ├── predicted_vs_actual_lr.png
-│   ├── predicted_vs_actual_rf.png
-│   ├── predicted_vs_actual_lgbm.png
-│   ├── predicted_vs_actual_xgb.png
-│   └── model_comparison.png
-└── forecast_requests/                    # Daily volume forecasting
-    └── forecast_comparison.png
-
-outputs/maps/
-├── request_density_heatmap.html          # Interactive coordinate density heatmap
-└── zip_choropleth_multi.html             # Interactive ZIP volume + median resolution map
-```
-
----
-
-## Troubleshooting
+# Troubleshooting & Advanced Usage
 
 **"No data loaded"**
 ```bash
