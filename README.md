@@ -4,7 +4,7 @@
 **Course:** CS506 — Data Science Project.      
 **Current Phase:** End-of-Semester Report (Final Analysis & Modeling). 
 
-[Link to presentation video](https://youtu.be/pshYbu_rqQ4)
+[Link to presentation video](https://youtu.be/ceKJIlxZ8ek)
 
 ---
 
@@ -12,12 +12,60 @@
 
 The goal of this project is to build a comprehensive **historical database of 311 service requests** for the City of Boston from **2011 to 2025**, analyze temporal and spatial trends, and create predictive models to improve city service responsiveness.
 
-At this midterm stage, our team has:
-- Collected and cleaned **15 years (2011–2025)** of data (~5 million records)
-- Built a **data pipeline** for preprocessing and visualization
-- Generated **15 core analytics visualizations**
-- Implemented **baseline machine learning models**
-- Obtained **promising preliminary results** on resolution time prediction
+Our team has completed:
+- Collection and cleaning of **15 years (2011–2025)** of data (~5 million records)
+- A robust **data pipeline** for preprocessing and visualization
+- **17 comprehensive visualizations** 
+- **Multiple machine learning models** including Linear Regression, Random Forest, XGBoost, LightGBM, ExtraTrees, and ensemble methods
+- **Daily request volume forecasting** using Prophet, SARIMA, and LightGBM
+- **Hyperparameter tuning** with Optuna for optimal model performance
+- Strong predictive results with Random Forest achieving **R² = 0.95** and **MAE = 6.78 days**
+
+## Quick Start
+
+### 1. Download Data
+```bash
+python download_data.py
+```
+Downloads ~1.8 GB to `data/raw/` (~5-10 min)
+
+### 2. Core Analytics
+```bash
+python -m src.core_analysis
+```
+Generates 15 PNG visualizations → `outputs/figures/` and 2 interactive maps (HTML) → `outputs/maps/` (~2-3 min; ZIP GeoJSON auto-downloaded if missing)
+
+### 3. Resolution Time Prediction
+```bash
+python -m src.predict_resolution_time
+# Optional: choose models to run (lr,rf,lgbm,xgb,extra,ensemble)
+python -m src.predict_resolution_time --models rf,lgbm,xgb,ensemble
+```
+Trains 4 ML models and generates plots → `outputs/figures/resolution_time/` (~2-3 min)
+
+`--models` values:
+- `lr` (Linear Regression baseline)
+- `rf` (Random Forest)
+- `lgbm` (LightGBM)
+- `xgb` (XGBoost)
+- `extra` (ExtraTrees)
+- `ensemble` (average of available tree models)
+Default: all models.
+
+**Optional:** Adjust Random Forest sampling and enable GPU:
+```bash
+python -m src.predict_resolution_time --sample 0.1  # 10% (default, fast)
+python -m src.predict_resolution_time --sample 1.0  # 100% (slower, more accurate)
+python -m src.predict_resolution_time --gpu         # Enable GPU for LightGBM/XGBoost
+```
+
+### 4. Daily Request Volume Forecasting
+```bash
+python -m src.forecast_requests --horizon 30
+```
+Forecasts daily request counts with Prophet, SARIMA, and LightGBM; outputs to `outputs/figures/forecast_requests/`.
+
+
 
 ---
 
@@ -256,7 +304,7 @@ Resolution-time visuals (PNG, `outputs/figures/resolution_time/`):
 │   ├── raw/              # Downloaded CSV files from Boston gov (2011-2025)
 │   └── processed/        # Cleaned and merged datasets
 ├── src/
-│   ├── core_analysis.py  # Main script: generates all 15 visualizations
+│   ├── core_analysis.py  # Main script: generates all 17 visualizations
 │   ├── predict_resolution_time.py  # ML prediction pipeline
 │   ├── forecast_requests.py  # Daily request volume forecasting (Prophet/SARIMA/LightGBM)
 │   ├── tuning/             # Optuna hyperparameter tuning scripts
